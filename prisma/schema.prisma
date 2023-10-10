@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+
+// type enum for content type music, podcast, audiobook, poem, paper
+
+enum ContentType {
+  MUSIC
+  PODCAST
+  AUDIOBOOK
+  POEM
+  PAPER
+}
+
+// type enum for music genre
+enum GenreContentTypes {
+  POP
+  ROCK
+  HIPHOP
+  RNB
+  JAZZ
+  COUNTRY
+  CLASSICAL
+  METAL
+  BLUES
+  FOLK
+  REGGAE
+  PUNK
+  ELECTRONIC
+  DANCE
+  HOUSE
+  TRANCE
+  TECHNO
+  DUBSTEP
+  DRUMNBASS
+  AMBIENT
+  CHILL
+  LOUNGE
+  TRAP
+  INDIE
+  ALTERNATIVE
+  GRUNGE
+  PSYCHEDELIC
+  EXPERIMENTAL
+  FUNK
+  SOUL
+  DISCO
+  GOSPEL
+  CHRISTIAN
+  INSTRUMENTAL
+  SOUNDTRACK
+  KPOP
+  JPOP
+  ANIME
+  GAME
+  OTHER
+}
+
+model Article {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique
+  title       String
+  description String
+  body        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  tagList     Tag[]
+  addedBy     User             @relation("added",fields: [authorId], references: [id])
+  authorId    Int
+  favorites   User[]          @relation("UserFavorites")
+  comments    Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  body      String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  articles Article[]
+}
+
+
+
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  username   String    @unique
+  password   String
+  image      String?   @default("https://api.realworld.io/images/smiley-cyrus.jpeg")
+  bio        String?
+  articles   Article[]   @relation("added")
+  favorites  Article[]   @relation("UserFavorites")
+  followedBy User[] @relation("UserFollows")
+  following User[] @relation("UserFollows")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  comments   Comment[]
+  songs      Song[]     @relation("addedSongs")
+  playlists  Playlist[] @relation("addedPlaylists")
+  albums     Album[]    @relation("addedAlbums")
+  artists    Artist[]   @relation("addedArtists")
+  @@map("users")
+}
+
+
+model Artist {
+  id               Int      @id @default(autoincrement())
+  name             String
+  songs            Song[]    @relation("ArtistSongs") // Refers to songs of the artist
+  primaryImage     String
+  followerCount    String
+  fanCount         String
+  isVerified       Boolean
+  dominantLanguage String
+  dominantType     String
+  bio              String
+  dob              String
+  fb               String
+  twitter          String
+  wiki             String
+  availableLanguages String
+  isRadioPresent   Boolean
+  primaryAlbums    Album[]  @relation("PrimaryArtists") 
+  featuredAlbums   Album[]  @relation("FeaturedArtists") 
+  featuredSongs    Song[]   @relation("FeaturedArtists") 
+  images           Image[]  @relation("ArtistImages")
+
+  addedBy     User             @relation("addedArtists",fields: [authorId], references: [id])
+  authorId    Int
+
+}
+
+model Album {
+  id           Int      @id @default(autoincrement())
+  title        String
+  releaseYear  Int
+  songs        Song[]
+  primaryArtists    Artist[] @relation("PrimaryArtists") 
+  featuredArtists   Artist[] @relation("FeaturedArtists")
+  label        String
+  image        Image[]  @relation("AlbumImages")
+  language     String
+  origin       String
+  playCount    Int
+  copyrightText String
+  isDolbyContent Boolean
+  explicitContent Int
+  hasLyrics    Boolean
+  lyricsSnippet String
+  hasLyric      Boolean
+  encryptedMediaUrl String
+  encryptedMediaPath String
+  mediaPreviewUrl String
+  permaUrl     String
+  albumUrl     String
+  duration     Int
+  webp         Boolean
+  disabled     Boolean
+  disabledText String
+  cacheState   Boolean
+  releaseDate  DateTime
+  vcode        String
+  vlink        String
+  trillerAvailable Boolean
+  labelUrl     String
+
+  addedBy     User             @relation("addedAlbums",fields: [authorId], references: [id])
+  authorId    Int
+}
+
+model Playlist {
+  id           Int      @id @default(autoincrement())
+  userId       String
+  name         String
+  followerCount String
+  songCount    Int
+  fanCount     String
+  username     String
+  firstname    String
+  lastname     String
+  shares       String
+  images       Image[]  @relation("PlaylistImages")
+  url          String
+  songs        Song[]  @relation("PlaylistSongs") 
+  addedBy     User             @relation("addedPlaylists",fields: [authorId], references: [id])
+  authorId    Int
+}
+
+model Genre {
+  id   Int    @id @default(autoincrement())
+  name GenreContentTypes
+  songs Song[] @relation("SongGenres")
+}
+
+model Song {
+  id              Int      @id @default(autoincrement())
+  name            String
+  album           Album    @relation(fields: [albumId], references: [id])
+  albumId         Int
+  year            String
+  releaseDate     DateTime?
+  duration        Int
+  label           String
+  primaryArtists  Artist[] @relation("ArtistSongs") 
+  featuredArtists Artist[] @relation("FeaturedArtists") 
+  explicitContent Int
+  playCount       Int
+  language        String
+  hasLyrics       Boolean
+  url             String
+  copyright       String
+  contentType     ContentType
+  images          Image[]  @relation("SongImages")
+  downloadUrls    SongDownloadUrl[] @relation("SongDownloadUrls")
+  origin             String
+  lyricsSnippet      String
+  encryptedMediaUrl  String
+  encryptedMediaPath String
+  mediaPreviewUrl    String
+  permaUrl           String
+  albumUrl           String
+  rightId            Int
+  kbps320            Boolean
+  isDolbyContent     Boolean
+  disabled           String
+  disabledText       String
+  cacheState         String
+  vcode              String
+  trillerAvailable   Boolean
+  labelUrl           String
+  playList      Playlist @relation("PlaylistSongs", fields: [id], references: [id])
+  addedBy     User             @relation("addedSongs",fields: [authorId], references: [id])
+  authorId    Int
+  genres      Genre[] @relation("SongGenres")
+
+}
+
+model Image {
+  id      Int      @id @default(autoincrement())
+  quality String
+  link    String
+  artist  Artist?  @relation("ArtistImages", fields: [artistId], references: [id])
+  artistId Int?
+  album   Album?   @relation("AlbumImages", fields: [albumId], references: [id])
+  albumId Int?
+  playlist Playlist? @relation("PlaylistImages", fields: [playlistId], references: [id])
+  playlistId Int?
+  song    Song?    @relation("SongImages", fields: [songId], references: [id])
+  songId  Int?
+
+}
+
+model SongDownloadUrl {
+  id       Int      @id @default(autoincrement())
+  quality  String
+  link     String
+  song     Song     @relation("SongDownloadUrls",fields: [songId], references: [id])
+  songId   Int
+}
