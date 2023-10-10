@@ -4,17 +4,13 @@ Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks,
 
 Implementing Shuno-Backend with express js using MySQL and prisma.
 
-## Project structure
 
-├───public
-│   ├───audios
-│   └───images
-├───src
-│   ├───controllers
-│   ├───models
-│   ├───routes
-│   ├───services
-│   └───utils
+## structure
+
+<!-- A image from public/images folder  -->
+
+![Shuno-Backend](./public/images/prisma-erd.svg)
+
 
 
 # Getting started
@@ -24,7 +20,7 @@ Implementing Shuno-Backend with express js using MySQL and prisma.
 ```
 npm install
 ```
-
+ 
 
 ### Connect the created server
 
