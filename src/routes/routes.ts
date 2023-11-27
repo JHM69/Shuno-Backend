@@ -3,11 +3,14 @@ import tagsController from '../controllers/tag.controller';
 import articlesController from '../controllers/article.controller';
 import authController from '../controllers/auth.controller';
 import profileController from '../controllers/profile.controller';
+import songController from '../controllers/song.controller';
 
 const api = Router()
   .use(tagsController)
   .use(articlesController)
   .use(profileController)
+  .use(songController)
   .use(authController);
+
 
 export default Router().use('/api', api);

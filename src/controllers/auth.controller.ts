@@ -12,10 +12,13 @@ const router = Router();
  * @returns user User
  */
 router.post('/users', async (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.body);
   try {
     const user = await createUser(req.body.user);
+    console.log("User created")
     res.json({ user });
   } catch (error) {
+    console.log(error.message)
     next(error);
   }
 });
@@ -28,7 +31,8 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
  * @returns user User
  */
 router.post('/users/login', async (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.body);
+  
+ 
   try {
     const user = await login(req.body.user);
     res.json({ user });

@@ -114,7 +114,7 @@ export const getFeed = async (offset: number, limit: number, username: string) =
 
   const articlesCount = await prisma.article.count({
     where: {
-      author: {
+      addedBy: {
         followedBy: { some: { id: user?.id } },
       },
     },
@@ -122,7 +122,7 @@ export const getFeed = async (offset: number, limit: number, username: string) =
 
   const articles = await prisma.article.findMany({
     where: {
-      author: {
+      addedBy: {
         followedBy: { some: { id: user?.id } },
       },
     },
@@ -210,7 +210,7 @@ export const createArticle = async (article: any, username: string) => {
           where: { name: tag },
         })),
       },
-      author: {
+      addedBy: {
         connect: {
           id: user?.id,
         },

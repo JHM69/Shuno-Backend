@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -123,6 +123,7 @@ model User {
 
 
 model Artist {
+  slug             String   @unique
   id               Int      @id @default(autoincrement())
   name             String
   songs            Song[]    @relation("ArtistSongs") // Refers to songs of the artist
@@ -147,9 +148,16 @@ model Artist {
   addedBy     User             @relation("addedArtists",fields: [authorId], references: [id])
   authorId    Int
 
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([name])
+  @@map("artists")
+
 }
 
 model Album {
+  slug            String   @unique
   id           Int      @id @default(autoincrement())
   title        String
   releaseYear  Int
@@ -182,14 +190,16 @@ model Album {
   vlink        String
   trillerAvailable Boolean
   labelUrl     String
-
   addedBy     User             @relation("addedAlbums",fields: [authorId], references: [id])
   authorId    Int
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model Playlist {
+  slug         String   @unique
   id           Int      @id @default(autoincrement())
-  userId       String
   name         String
   followerCount String
   songCount    Int
@@ -201,17 +211,22 @@ model Playlist {
   images       Image[]  @relation("PlaylistImages")
   url          String
   songs        Song[]  @relation("PlaylistSongs") 
-  addedBy     User             @relation("addedPlaylists",fields: [authorId], references: [id])
-  authorId    Int
+  addedBy     User             @relation("addedPlaylists",fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model Genre {
   id   Int    @id @default(autoincrement())
   name GenreContentTypes
   songs Song[] @relation("SongGenres")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model Song {
+  slug            String   @unique
   id              Int      @id @default(autoincrement())
   name            String
   album           Album    @relation(fields: [albumId], references: [id])
@@ -247,10 +262,17 @@ model Song {
   vcode              String
   trillerAvailable   Boolean
   labelUrl           String
-  playList      Playlist @relation("PlaylistSongs", fields: [id], references: [id])
-  addedBy     User             @relation("addedSongs",fields: [authorId], references: [id])
-  authorId    Int
+  playLists          Playlist[] @relation("PlaylistSongs")
+  addedBy     User   @relation("addedSongs",fields: [userId], references: [id])
+  userId    Int
   genres      Genre[] @relation("SongGenres")
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([name], name: "name")
+  @@map("songs")
+
 
 }
 
@@ -266,7 +288,6 @@ model Image {
   playlistId Int?
   song    Song?    @relation("SongImages", fields: [songId], references: [id])
   songId  Int?
-
 }
 
 model SongDownloadUrl {

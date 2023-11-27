@@ -15,7 +15,7 @@ const getTags = async (username?: string): Promise<string[]> => {
     where: {
       articles: {
         some: {
-          author: {
+          addedBy: {
             OR: queries,
           },
         },
