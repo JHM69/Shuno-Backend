@@ -1,11 +1,7 @@
 
-import { Song } from '@prisma/client';
 import slugify from 'slugify';
 import prisma from '../../prisma/prisma-client';
 import HttpException from '../models/http-exception.model';
-import { findUserIdByUsername } from './auth.service';
-import profileMapper from '../utils/profile.utils';
-
 
 const buildFindAllQuery = (query: any, username: string | undefined) => {
   const queries: any = [];
@@ -42,12 +38,11 @@ export const getSongs = async (query: any, username?: string) => {
       featuredArtists: true,
       downloadUrls: true,
       images: true,
+      playLists: true,
+      album: true,
       addedBy: {
         select: {
           username: true,
-          bio: true,
-          image: true,
-          followedBy: true,
         },
       },
     },
@@ -59,225 +54,215 @@ export const getSongs = async (query: any, username?: string) => {
   };
 };
 
+export const createSong = async (song: any, username : string) => {
+  const { 
+    name,  
+    albumSlug,
+    primaryArtists, 
+    featuredArtists, 
+    playLists, 
+    genres,
+    year,
+    releaseDate,
+    duration,
+    label,
+    explicitContent,
+    playCount,
+    language,
+    hasLyrics,
+    url,
+    copyright,
+    contentType,
+    origin,
+    lyricsSnippet,
+    encryptedMediaUrl,
+    encryptedMediaPath,
+    mediaPreviewUrl,
+    permaUrl,
+    albumUrl,
+    rightId,
+    kbps320,
+    isDolbyContent,
+    disabled,
+    disabledText,
+    cacheState,
+    vcode,
+    trillerAvailable,
+    labelUrl,
+    primaryImage,
+    images,
+    downloadUrls,
+  } = song;
 
-
-export const createSong = async (song: Song, username: string) => {
-  const { name } = song;
-
-  if (!name) {
-    throw new HttpException(422, { errors: { title: ["can't be blank"] } });
+  if (!name ) {
+    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
   }
 
-  const user = await findUserIdByUsername(username);
-
-  const slug = `${slugify(name)}-${user?.id}`;
-
-  const existingTitle = await prisma.song.findUnique({
-    where: {
-      slug,
-    },
-    select: {
-      slug: true,
-    },
-  });
-
-  if (existingTitle) {
-    throw new HttpException(422, { errors: { title: ['must be unique'] } });
+  const data : any = {
+    slug : `${slugify(name)}`,
+    name,
+    year,
+    releaseDate: new Date(releaseDate),
+    duration : Number(duration),
+    label,
+    primaryImage,  
+    playCount: 0,
+    language,
+    url,
+    copyright,
+    contentType,
+    origin,
+    lyricsSnippet,
+    hasLyrics: (hasLyrics === "true"),
+    encryptedMediaUrl,
+    encryptedMediaPath,
+    mediaPreviewUrl,
+    permaUrl,
+    albumUrl, 
+    kbps320 : (kbps320 === "true"),
+    isDolbyContent : (isDolbyContent === "true"),
+    disabled,
+    disabledText,
+    cacheState,
+    vcode,
+    trillerAvailable : (trillerAvailable === "true"),
+    labelUrl,
+    addedBy: { connect: { username } },
   }
 
-  const createdSong = await prisma.song.create({
-    data: {
-      name: song.name,
-        album: {
-          connect: { id: song.albumId },
-        },
-        year: song.year,
-        releaseDate: song.releaseDate,
-        duration: song.duration,
-        label: song.label,
-        primaryArtists: {
-          connect: song?.primaryArtists.map((artistId: number) => ({ id: artistId })),
-        },
-        featuredArtists: {
-          connect: song?.featuredArtists.map((artistId: number) => ({ id: artistId })),
-        },
-        explicitContent: song.explicitContent,
-        playCount: song.playCount,
-        language: song.language,
-        hasLyrics: song.hasLyrics,
-        url: song.url,
-        copyright: song.copyright,
-        contentType: song.contentType,
-        origin: song.origin,
-        lyricsSnippet: song.lyricsSnippet,
-        encryptedMediaUrl: song.encryptedMediaUrl,
-        encryptedMediaPath: song.encryptedMediaPath,
-        mediaPreviewUrl: song.mediaPreviewUrl,
-        permaUrl: song.permaUrl,
-        albumUrl: song.albumUrl,
-        rightId: song.rightId,
-        kbps320: song.kbps320,
-        isDolbyContent: song.isDolbyContent,
-        disabled: song.disabled,
-        disabledText: song.disabledText,
-        cacheState: song.cacheState,
-        vcode: song.vcode,
-        trillerAvailable: song.trillerAvailable,
-        labelUrl: song.labelUrl,
-        playLists: {
-          connect: song.playLists.map((playListId: number) => ({ id: playListId })),
-        },   
-        addedBy: {
-          connect: { username: username },
-        },
-        genres: {
-          connect: song?.genres.map((genreId: number) => ({ id: genreId })),
-        },
+
+  if(albumSlug){
+    data.album = {
+      connect: {
+        slug: albumSlug,
+      },
     }
-  });
+  }
+  if(primaryArtists){
+    data.primaryArtists = {
+      connect: primaryArtists.map((artist: any) => ({
+        slug: artist,
+      })),
+    }
+  }
+  if(featuredArtists){
+    data.featuredArtists = {
+      connect: featuredArtists.map((artist: any) => ({
+        slug: artist,
+      })),
+    }
+  }
+  if(playLists){
+    data.playLists = {
+      connect: playLists.map((playList: any) => ({
+        slug: playList,
+      })),
+    }
+  }
+  if(genres){
+    data.genres = {
+      connect: genres.map((genre: any) => ({
+        slug: genre,
+      })),
+    }
+  }
+
+  if(images){
+    data.images = {
+      create: images.map((image: any) => ({
+        url: image.url,
+        type: image.type,
+      })),
+    }
+  }
+
+  if(downloadUrls){
+    data.downloadUrls = {
+      create: downloadUrls.map((downloadUrl: any) => ({
+        url: downloadUrl.url,
+        type: downloadUrl.type,
+      })),
+    }
+  }
+
+  const s =  await prisma.song.create( {
+    data
+  }).catch(() => { 
+    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
+  }); 
 
   return {
-    
+    song: s
   };
 };
 
-export const getSong = async (slug: string, username?: string) => {
+export const getSong = async (slug: string) => {
   const song = await prisma.song.findUnique({
     where: {
       slug,
     },
     include: {
-      tagList: {
+      genres: {
         select: {
           name: true,
         },
       },
-      author: {
+      primaryArtists: {
         select: {
-          username: true,
-          bio: true,
-          image: true,
-          followedBy: true,
+          name: true,
+        },
+      }, 
+      downloadUrls: true,
+      images : true,
+      featuredArtists: {
+        select: {
+          name: true,
         },
       },
-      favoritedBy: true,
+      addedBy: {
+        select: {
+          username: true, 
+        },
+      },
+      playLists: {
+        select: {
+          name: true,
+        },
+      },
+      album: {
+        select: {
+          title: true,
+        },
+      },
+      likeds: true,
       _count: {
         select: {
-          favoritedBy: true,
+          likeds: true,
         },
       },
     },
   });
 
   return {
-    title: song?.title,
-    slug: song?.slug,
-    body: song?.body,
-    description: song?.description,
-    createdAt: song?.createdAt,
-    updatedAt: song?.updatedAt,
-    tagList: song?.tagList.map(tag => tag.name),
-    favoritesCount: song?._count?.favoritedBy,
-    favorited: song?.favoritedBy.some(item => item.username === username),
-    author: {
-      ...song?.author,
-      following: song?.author.followedBy.some(follow => follow.username === username),
-    },
+    song
   };
 };
 
-const disconnectSongsTags = async (slug: string) => {
-  await prisma.song.update({
-    where: {
-      slug,
-    },
-    data: {
-      tagList: {
-        set: [],
-      },
-    },
-  });
-};
-
-export const updateSong = async (song: any, slug: string, username: string) => {
-  let newSlug = null;
-  const user = await findUserIdByUsername(username);
-
-  if (song.title) {
-    newSlug = `${slugify(song.title)}-${user?.id}`;
-
-    if (newSlug !== slug) {
-      const existingTitle = await prisma.song.findFirst({
-        where: {
-          slug: newSlug,
-        },
-        select: {
-          slug: true,
-        },
-      });
-
-      if (existingTitle) {
-        throw new HttpException(422, { errors: { title: ['must be unique'] } });
-      }
-    }
-  }
-
-  const tagList = song.tagList?.length
-    ? song.tagList.map((tag: string) => ({
-        create: { name: tag },
-        where: { name: tag },
-      }))
-    : [];
-
-  await disconnectSongsTags(slug);
+export const updateSong = async (song: any, slug: string) => {
 
   const updatedSong = await prisma.song.update({
     where: {
       slug,
     },
     data: {
-      ...(song.title ? { title: song.title } : {}),
-      ...(song.body ? { body: song.body } : {}),
-      ...(song.description ? { description: song.description } : {}),
-      ...(newSlug ? { slug: newSlug } : {}),
-      updatedAt: new Date(),
-      tagList: {
-        connectOrCreate: tagList,
-      },
+      slug : `${slugify(song.name)}`,
+      ...song
     },
-    include: {
-      tagList: {
-        select: {
-          name: true,
-        },
-      },
-      author: {
-        select: {
-          username: true,
-          bio: true,
-          image: true,
-        },
-      },
-      favoritedBy: true,
-      _count: {
-        select: {
-          favoritedBy: true,
-        },
-      },
-    },
+   
   });
 
   return {
-    title: updatedSong?.title,
-    slug: updatedSong?.slug,
-    body: updatedSong?.body,
-    description: updatedSong?.description,
-    createdAt: updatedSong?.createdAt,
-    updatedAt: updatedSong?.updatedAt,
-    tagList: updatedSong?.tagList.map(tag => tag.name),
-    favoritesCount: updatedSong?._count?.favoritedBy,
-    favorited: updatedSong?.favoritedBy.some(item => item.username === username),
-    author: updatedSong?.author,
+    updatedSong
   };
 };
 
@@ -287,228 +272,4 @@ export const deleteSong = async (slug: string) => {
       slug,
     },
   });
-};
-
-export const getCommentsBySong = async (slug: string, username?: string) => {
-  const queries = [];
-
-  if (username) {
-    queries.push({
-      author: {
-        username,
-      },
-    });
-  }
-
-  const comments = await prisma.song.findUnique({
-    where: {
-      slug,
-    },
-    include: {
-      comments: {
-        where: {
-          OR: queries,
-        },
-        select: {
-          id: true,
-          createdAt: true,
-          updatedAt: true,
-          body: true,
-          author: {
-            select: {
-              username: true,
-              bio: true,
-              image: true,
-              followedBy: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  const result = comments?.comments.map(comment => ({
-    ...comment,
-    author: {
-      username: comment.author.username,
-      bio: comment.author.bio,
-      image: comment.author.image,
-      following: comment.author.followedBy.some(follow => follow.username === username),
-    },
-  }));
-
-  return result;
-};
-
-export const addComment = async (body: string, slug: string, username: string) => {
-  if (!body) {
-    throw new HttpException(422, { errors: { body: ["can't be blank"] } });
-  }
-
-  const user = await findUserIdByUsername(username);
-
-  const song = await prisma.song.findUnique({
-    where: {
-      slug,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  const comment = await prisma.comment.create({
-    data: {
-      body,
-      song: {
-        connect: {
-          id: song?.id,
-        },
-      },
-      author: {
-        connect: {
-          id: user?.id,
-        },
-      },
-    },
-    include: {
-      author: {
-        select: {
-          username: true,
-          bio: true,
-          image: true,
-          followedBy: true,
-        },
-      },
-    },
-  });
-
-  return {
-    id: comment.id,
-    createdAt: comment.createdAt,
-    updatedAt: comment.updatedAt,
-    body: comment.body,
-    author: {
-      username: comment.author.username,
-      bio: comment.author.bio,
-      image: comment.author.image,
-      following: comment.author.followedBy.some(follow => follow.id === user?.id),
-    },
-  };
-};
-
-export const deleteComment = async (id: number, username: string) => {
-  const comment = await prisma.comment.findFirst({
-    where: {
-      id,
-      author: {
-        username,
-      },
-    },
-  });
-
-  if (!comment) {
-    throw new HttpException(201, {});
-  }
-
-  await prisma.comment.delete({
-    where: {
-      id,
-    },
-  });
-};
-
-export const favoriteSong = async (slugPayload: string, usernameAuth: string) => {
-  const user = await findUserIdByUsername(usernameAuth);
-
-  const { _count, ...song } = await prisma.song.update({
-    where: {
-      slug: slugPayload,
-    },
-    data: {
-      favoritedBy: {
-        connect: {
-          id: user?.id,
-        },
-      },
-    },
-    include: {
-      tagList: {
-        select: {
-          name: true,
-        },
-      },
-      author: {
-        select: {
-          username: true,
-          bio: true,
-          image: true,
-          followedBy: true,
-        },
-      },
-      favoritedBy: true,
-      _count: {
-        select: {
-          favoritedBy: true,
-        },
-      },
-    },
-  });
-
-  const result = {
-    ...song,
-    author: profileMapper(song.author, usernameAuth),
-    tagList: song?.tagList.map(tag => tag.name),
-    favorited: song.favoritedBy.some(favorited => favorited.id === user?.id),
-    favoritesCount: _count?.favoritedBy,
-  };
-
-  return result;
-};
-
-export const unfavoriteSong = async (slugPayload: string, usernameAuth: string) => {
-  const user = await findUserIdByUsername(usernameAuth);
-
-  const { _count, ...song } = await prisma.song.update({
-    where: {
-      slug: slugPayload,
-    },
-    data: {
-      favoritedBy: {
-        disconnect: {
-          id: user?.id,
-        },
-      },
-    },
-    include: {
-      tagList: {
-        select: {
-          name: true,
-        },
-      },
-      author: {
-        select: {
-          username: true,
-          bio: true,
-          image: true,
-          followedBy: true,
-        },
-      },
-      favoritedBy: true,
-      _count: {
-        select: {
-          favoritedBy: true,
-        },
-      },
-    },
-  });
-
-  const result = {
-    ...song,
-    author: profileMapper(song.author, usernameAuth),
-    tagList: song?.tagList.map(tag => tag.name),
-    favorited: song.favoritedBy.some(favorited => favorited.id === user?.id),
-    favoritesCount: _count?.favoritedBy,
-  };
-
-  return result;
 };

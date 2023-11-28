@@ -1,15 +1,10 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import auth from '../utils/auth';
 import {
-  addComment,
   createSong,
   deleteSong,
-  deleteComment,
-  favoriteSong,
   getSong,
   getSongs,
-  getCommentsBySong,
-  unfavoriteSong,
   updateSong,
 } from '../services/songs.service';
 
@@ -28,7 +23,7 @@ const router = Router();
  */
 router.get('/songs', auth.optional, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await getSongs(req.query, req.user?.username);
+    const result = await getSongs(req.query);
     res.json(result);
   } catch (error) {
     next(error);
@@ -64,7 +59,7 @@ router.get(
  */
 router.post('/songs', auth.required, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const song = await createSong(req.body.song, req.user?.username as string);
+    const song = await createSong(req.body, req.user?.username as string);
     res.json({ song });
   } catch (error) {
     next(error);
@@ -83,7 +78,7 @@ router.get(
   auth.optional,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const song = await getSong(req.params.slug, req.user?.username as string);
+      const song = await getSong(req.params.slug);
       res.json({ song });
     } catch (error) {
       next(error);
@@ -108,8 +103,7 @@ router.put(
     try {
       const song = await updateSong(
         req.body.song,
-        req.params.slug,
-        req.user?.username as string,
+        req.params.slug, 
       );
       res.json({ song });
     } catch (error) {
@@ -136,110 +130,6 @@ router.delete(
     }
   },
 );
-
-/**
- * Get comments from an song
- * @auth optional
- * @route {GET} /songs/:slug/comments
- * @param slug slug of the song (based on the title)
- * @returns comments list of comments
- */
-router.get(
-  '/songs/:slug/comments',
-  auth.optional,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const comments = await getCommentsBySong(req.params.slug, req.user?.username);
-      res.json({ comments });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Add comment to song
- * @auth required
- * @route {POST} /songs/:slug/comments
- * @param slug slug of the song (based on the title)
- * @bodyparam body content of the comment
- * @returns comment created comment
- */
-router.post(
-  '/songs/:slug/comments',
-  auth.required,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const comment = await addComment(
-        req.body.comment.body,
-        req.params.slug,
-        req.user?.username as string,
-      );
-      res.json({ comment });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Delete comment
- * @auth required
- * @route {DELETE} /songs/:slug/comments/:id
- * @param slug slug of the song (based on the title)
- * @param id id of the comment
- */
-router.delete(
-  '/songs/:slug/comments/:id',
-  auth.required,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await deleteComment(Number(req.params.id), req.user?.username as string);
-      res.sendStatus(204);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Favorite song
- * @auth required
- * @route {POST} /songs/:slug/favorite
- * @param slug slug of the song (based on the title)
- * @returns song favorited song
- */
-router.post(
-  '/songs/:slug/favorite',
-  auth.required,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const song = await favoriteSong(req.params.slug, req.user?.username as string);
-      res.json({ song });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Unfavorite song
- * @auth required
- * @route {DELETE} /songs/:slug/favorite
- * @param slug slug of the song (based on the title)
- * @returns song unfavorited song
- */
-router.delete(
-  '/songs/:slug/favorite',
-  auth.required,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const song = await unfavoriteSong(req.params.slug, req.user?.username as string);
-      res.json({ song });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+ 
 
 export default router;

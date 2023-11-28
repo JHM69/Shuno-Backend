@@ -20,7 +20,12 @@ Implementing Shuno-Backend with express js using MySQL and prisma.
 ```
 npm install
 ```
- 
+
+### Start PostgreSQL
+
+```
+pg_ctl.exe start -D "C:\Program Files\PostgreSQL\16\data"
+```
 
 ### Connect the created server
 
