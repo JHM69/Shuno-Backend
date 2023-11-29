@@ -9,7 +9,7 @@ Implementing Shuno-Backend with express js using MySQL and prisma.
 
 <!-- A image from public/images folder  -->
 
-![Shuno-Backend](./public/images/prisma-erd.svg)
+![Shuno-Backend](./public/images/erd.png)
 
 
 
