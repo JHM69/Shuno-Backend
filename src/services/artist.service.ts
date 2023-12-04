@@ -161,6 +161,7 @@ export const getArtist = async (slug: string) => {
         select: {
           slug: true,
           name: true, 
+          primaryImage: true,
         }
       },
       bandMemberOf: {

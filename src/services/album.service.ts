@@ -19,6 +19,20 @@ const buildFindAllQuery = (query: any, username: string | undefined) => {
 
 export const getAlbums = async (query: any, username?: string) => {
   const andQueries = buildFindAllQuery(query, username);
+
+
+  if ('search' in query) {
+    andQueries.push({
+      name: {
+        contains: query.search,
+        mode: 'insensitive',
+      },
+    });
+  }
+
+
+
+
   const albumsCount = await prisma.album.count({
     where: {
       AND: andQueries,
@@ -30,6 +44,16 @@ export const getAlbums = async (query: any, username?: string) => {
     orderBy: {
       createdAt: 'desc',
     },
+    include: {
+      mainArtist:
+      {
+        select: {
+          name: true,
+          slug: true,
+          primaryImage: true,
+        },
+      },
+    }, 
     skip: Number(query.offset) || 0,
     take: Number(query.limit) || 10,
      
@@ -43,87 +67,104 @@ export const getAlbums = async (query: any, username?: string) => {
 
 export const createAlbum = async (album: any, username : string) => {
   const { 
-    name,  
-    albumSlug,
-    primaryArtists, 
-    featuredArtists, 
-    playLists, 
-    genres,
-    year,
-    releaseDate,
-    duration,
-    label,
-    explicitContent,
-    playCount,
-    language,
-    hasLyrics,
-    url,
-    copyright,
     contentType,
-    origin,
-    lyricsSnippet,
-    encryptedMediaUrl,
-    encryptedMediaPath,
-    mediaPreviewUrl,
-    permaUrl,
-    albumUrl,
-    rightId,
-    kbps320,
-    isDolbyContent,
-    disabled,
-    disabledText,
-    cacheState,
-    vcode,
-    trillerAvailable,
-    labelUrl
+coverImage ,
+duration ,
+genres ,
+isPremium ,
+label ,
+language ,
+name ,
+releaseDate ,
+trillerAvailable ,
+price , 
+currency,
+mainArtistSlug,
+primaryArtists,
+featuredArtists,
+trillerUrl
   } = album;
+
+ 
 
   if (!name ) {
     throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
   }
 
-  return {
-    createdAlbum: await prisma.album.create({
-      data: {
-        slug : `${slugify(name)}`,
-        name,
-        album: { connect: { slug: albumSlug } || {}},
-        year,
-        releaseDate,
-        duration,
-        label,
-        images : { create: album.images || [] },
-        downloadUrls : { create: album.downloadUrls || [] },
-        primaryArtists: { connect: primaryArtists.map((slug: string) => ({ slug })) || [] },
-        featuredArtists: { connect: featuredArtists?.map((slug: string) => ({ slug })) || [] },
-        explicitContent,
-        playCount,
-        language,
-        hasLyrics,
-        url,
-        copyright,
-        contentType,
-        origin,
-        lyricsSnippet,
-        encryptedMediaUrl,
-        encryptedMediaPath,
-        mediaPreviewUrl,
-        permaUrl,
-        albumUrl,
-        rightId,
-        kbps320,
-        isDolbyContent,
-        disabled,
-        disabledText,
-        cacheState,
-        vcode,
-        trillerAvailable,
-        labelUrl,
-        playLists: { connect: playLists.map((slug: string) => ({ slug }))  || []},
-        addedBy: { connect: { username } },
-        genres: { connect: genres.map((slug: string) => ({ slug }))  || [] }, 
+  console.log("album");
+  console.log(album);
+
+  const data : any = {
+    slug : `${slugify(name)}`,
+    contentType,
+coverImage ,
+duration : Number(duration) || 0,
+
+isPremium : (isPremium === "true") ? true : false ,
+label ,
+language: language || "Bangla" ,
+name ,
+likes : 0,
+plays : 0,
+disabled : false,
+origin : "local",
+mainArtist : {
+  connect : {
+    slug : mainArtistSlug
+  }
+},
+trillerUrl,
+releaseDate: new Date(releaseDate) , 
+releaseYear : new Date(releaseDate).getFullYear().toString() ,
+trillerAvailable : (trillerAvailable === "true") ? true : false,
+    addedBy: {
+      connect: {
+        username,
       },
-    })
+    },
+    }
+
+    if(genres) {
+      data.genres = {
+        connect: genres.map((genre: any) => ({
+          slug: genre,
+        })),
+      };
+    }
+
+    if(primaryArtists){
+      data.primaryArtists = {
+        connect: primaryArtists.map((artist: any) => ({
+          slug: artist,
+        })),
+      }
+    }
+    if(featuredArtists){
+      data.featuredArtists = {
+        connect: featuredArtists.map((artist: any) => ({
+          slug: artist,
+        })),
+      }
+    }
+
+    if(isPremium === "true" && price) {
+      data.price = price;
+      data.currency =  currency || "BDT";
+    }else{
+      data.price = 0;
+      data.currency =  "BDT"; 
+    }
+
+    const al = await prisma.album.create({
+      data
+    }).catch((e) => {
+      console.log(e);
+      throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
+    });
+
+
+  return {
+    album : al
   };
 };
 
@@ -132,46 +173,45 @@ export const getAlbum = async (slug: string) => {
     where: {
       slug,
     },
-    include: {
-      genres: {
+    include : {
+      mainArtist:
+      {
         select: {
           name: true,
+          slug: true,
+          primaryImage: true,
         },
       },
       primaryArtists: {
         select: {
           name: true,
+          slug: true,
+          primaryImage: true,
         },
-      }, 
-      downloadUrls: true,
-      images : true,
+      },
       featuredArtists: {
         select: {
           name: true,
+          slug: true,
+          primaryImage: true,
         },
       },
-      addedBy: {
-        select: {
-          username: true, 
-        },
-      },
-      playLists: {
+      genres: {
         select: {
           name: true,
+          slug: true,
         },
       },
-      album: {
-        select: {
-          title: true,
-        },
-      },
-      likeds: true,
-      _count: {
-        select: {
-          likeds: true,
-        },
-      },
+      songs : {
+         select: {
+          name : true,
+          slug : true,
+          duration : true,
+          primaryImage : true,
+       }
+      }
     },
+
   });
 
   return {
@@ -181,16 +221,101 @@ export const getAlbum = async (slug: string) => {
 
 export const updateAlbum = async (album: any, slug: string) => {
 
+
+  const { 
+    contentType,
+coverImage ,
+duration ,
+genres ,
+isPremium ,
+label ,
+language ,
+name ,
+releaseDate ,
+trillerAvailable ,
+price , 
+currency,
+mainArtistSlug,
+primaryArtists,
+featuredArtists,
+trillerUrl
+  } = album;
+
+ 
+
+  if (!name ) {
+    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
+  }
+
+  console.log("album");
+  console.log(album);
+
+  const data : any = {
+    slug : `${slugify(name)}`,
+    contentType,
+coverImage ,
+duration : Number(duration) || 0,
+
+isPremium : (isPremium === "true") ? true : false ,
+label ,
+language: language || "Bangla" ,
+name, 
+mainArtist : {
+  connect : {
+    slug : mainArtistSlug
+  }
+},
+trillerUrl,
+releaseDate: new Date(releaseDate) , 
+releaseYear : new Date(releaseDate).getFullYear().toString() ,
+trillerAvailable : (trillerAvailable === "true") ? true : false,
+    }
+
+    if(genres) {
+      data.genres = {
+        connect: genres.map((genre: any) => ({
+          slug: genre,
+        })),
+      };
+    }
+
+    if(primaryArtists){
+      data.primaryArtists = {
+        connect: primaryArtists.map((artist: any) => ({
+          slug: artist,
+        })),
+      }
+    }
+    if(featuredArtists){
+      data.featuredArtists = {
+        connect: featuredArtists.map((artist: any) => ({
+          slug: artist,
+        })),
+      }
+    }
+
+    if(isPremium === "true" && price) {
+      data.price = price;
+      data.currency =  currency || "BDT";
+    }else{
+      data.price = 0;
+      data.currency =  "BDT"; 
+    }
+
+
+    console.log("data");
+    console.log(data);
   const updatedAlbum = await prisma.album.update({
     where: {
       slug,
     },
-    data: {
-      slug : `${slugify(album.name)}`,
-      ...album
-    },
-   
-  });
+    data: data,
+  }).catch((e) => { 
+    console.log(e);
+    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
+    
+  }
+  );
 
   return {
     updatedAlbum

@@ -105,8 +105,9 @@ model Artist {
   bandMemberOf     Artist[]  @relation("BandMembers")
   primaryAlbums    Album[]  @relation("PrimaryArtists") 
   featuredAlbums   Album[]  @relation("FeaturedArtists") 
-  featuredSongs    Song[]   @relation("FeaturedArtists") 
+  featuredSongs    Song[]   @relation("FeaturedArtistsSong") 
   images           Image[]  @relation("ArtistImages")
+  albums           Album[]  @relation("ArtistAlbums")
   addedBy     User             @relation("addedArtists",fields: [userId], references: [id])
   userId    Int
   createdAt DateTime    @default(now())
@@ -128,6 +129,10 @@ model Album {
   contentType  ContentType 
   duration     Int?
   price        Int?
+  mainArtist   Artist?  @relation("ArtistAlbums",fields: [mainArtistSlug], references: [slug])
+  mainArtistSlug String?
+  genres      Genre[] @relation("AlbumGenres")
+  currency     String?
   primaryArtists    Artist[] @relation("PrimaryArtists") 
   featuredArtists   Artist[] @relation("FeaturedArtists")
   label        String?
@@ -142,6 +147,7 @@ model Album {
   disabledText String? 
   releaseDate  DateTime? @default(now())  
   trillerAvailable Boolean  
+  trillerUrl   String?
   addedBy      User             @relation("addedAlbums",fields: [userId], references: [id])
   userId    Int
   createdAt DateTime    @default(now())
@@ -150,20 +156,14 @@ model Album {
 
 model Playlist {
   slug         String   @unique
-  id           Int      @id @default(autoincrement())
-  name         String
-  followerCount String
-  songCount    Int
-  fanCount     String
-  username     String
-  firstname    String
-  lastname     String
-  shares       String
+  id           Int      @id @default(autoincrement())  
+  primaryImage String?
+  username     String 
   images       Image[]  @relation("PlaylistImages")
   url          String
   songs        Song[]  @relation("PlaylistSongs") 
-  genres      Genre[] @relation("PlaylistGenres")
-  addedBy     User             @relation("addedPlaylists",fields: [userId], references: [id])
+  genres       Genre[] @relation("PlaylistGenres")
+  addedBy      User             @relation("addedPlaylists",fields: [userId], references: [id])
   userId    Int
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
@@ -176,6 +176,7 @@ model Genre {
   songs Song[] @relation("SongGenres")
   artists Artist[] @relation("ArtistGenres")
   playlists Playlist[] @relation("PlaylistGenres")
+  albums Album[] @relation("AlbumGenres")
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }
@@ -191,7 +192,7 @@ model Song {
   duration        Int?
   label           String?
   primaryArtists  Artist[] @relation("ArtistSongs") 
-  featuredArtists Artist[] @relation("FeaturedArtists") 
+  featuredArtists Artist[] @relation("FeaturedArtistsSong") 
   explicitContent Int?
   playCount       Int?
   language        String?

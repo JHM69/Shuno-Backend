@@ -59,7 +59,7 @@ router.get(
  */
 router.post('/albums', auth.required, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const album = await createAlbum(req.body.album, req.user?.username as string);
+    const album = await createAlbum(req.body, req.user?.username as string);
     res.json({ album });
   } catch (error) {
     next(error);
@@ -102,7 +102,7 @@ router.put(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const album = await updateAlbum(
-        req.body.album,
+        req.body,
         req.params.slug, 
       );
       res.json({ album });
