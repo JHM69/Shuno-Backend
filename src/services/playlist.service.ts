@@ -2,6 +2,7 @@
 import slugify from 'slugify';
 import prisma from '../../prisma/prisma-client';
 import HttpException from '../models/http-exception.model';
+import { Artist, Song } from '@prisma/client';
 
 const buildFindAllQuery = (query: any, username: string | undefined) => {
   const queries: any = [];
@@ -52,15 +53,7 @@ export const createPlaylist = async (playlist: any, username : string) => {
   }
 
   return {
-    createdPlaylist: await prisma.playlist.create({
-      data: {
-        slug : `${slugify(name)}`,
-        name,
-        images : { create: playlist.images || [] },
-        
-        addedBy: { connect: { username } },
-      },
-    })
+     
   };
 };
 
@@ -69,12 +62,179 @@ export const getPlaylist = async (slug: string) => {
     where: {
       slug,
     },
-     
+    include: {
+      addedBy: true,
+      songs: {
+        include: {
+          primaryArtists: true,
+          album: true,
+          genres: true,
+        }, 
+      },
+    },
   });
-
   return {
     playlist
   };
+};
+
+
+export const getPlaylistById = async (slug: string) => { 
+  const playlist = await prisma.playlist.findUnique({
+    where: {
+      slug
+    },
+    include: {
+      addedBy: true,
+      songs: {
+        include: {
+          primaryArtists: {
+            select: {
+              name: true,
+              slug : true,
+              primaryImage: true,
+            },
+          },
+          featuredArtists: {
+            select: {
+              name: true,
+              slug : true,
+              primaryImage: true,
+            },
+          },
+          album: {
+            select: {
+              name: true,
+              coverImage: true,
+              slug: true,
+            },
+          },
+          genres: {
+            select: {
+              name: true,
+            },
+          },
+        }, 
+      },
+    },
+  });
+  
+  const data = {
+    "id": playlist?.id,
+    "title":  playlist?.name,
+    "subtitle":  playlist?.subtitle,
+    "header_desc": "playlist?.description",
+    "type": "playlist",
+    "perma_url": "shuno-cms.com\/playlist\/" + playlist?.id,
+    "image": playlist?.primaryImage,
+    "language": playlist?.language,
+    "year": playlist?.year,
+    "play_count": "0",
+    "explicit_content": "0",
+    "list_count":  playlist?.songs.length.toString() || "0",
+    "list_type": "",
+    "list": playlist?.songs ,
+    "more_info": {
+      "uid": "phulki_user",
+      "is_dolby_content": false,
+      "subtype": [],
+      "last_updated": "1663651559",
+      "username": "phulki_user",
+      "firstname": "JioSaavn",
+      "lastname": "",
+      "is_followed": "",
+      "isFY": false,
+      "follower_count": "0",
+      "fan_count": "0",
+      "playlist_type": "playlist",
+      "share": "1",
+      "sub_types": [],
+      "images": [],
+      "H2": "Trending Songs",
+      "subheading": null,
+      "video_count": "0",
+      "artists": playlist?.songs?.map((song: any) =>
+          song?.primaryArtists.map((artist: any) => ({
+                "id": artist.slug,
+                "name": artist.name,
+                "role": "primary_artist",
+                "image": artist.primaryImage,
+        }))
+      ),
+       
+    },
+    "modules": {
+      "list": {
+        "source": "list",
+        "position": 1,
+        "score": "",
+        "bucket": "",
+        "scroll_type": "Cells_Standard",
+        "title": "",
+        "subtitle": "",
+        "highlight": "",
+        "simpleHeader": false,
+        "noHeader": true,
+        "view_more": [],
+        "is_JT_module": false
+      },
+      
+      "relatedPlaylist": {
+        "source": "reco.getPlaylistReco",
+        "position": 2,
+        "score": "",
+        "bucket": "",
+        "scroll_type": "SS_Basic",
+        "title": "Related Playlist",
+        "subtitle": "",
+        "highlight": "",
+        "simpleHeader": false,
+        "noHeader": false,
+        "source_api": true,
+        "source_params": {
+          "listid": "47599074"
+        },
+        "view_more": [],
+        "is_JT_module": false
+      },
+      "currentlyTrendingPlaylists": {
+        "source": "content.getTrending",
+        "position": 3,
+        "score": "",
+        "bucket": "",
+        "scroll_type": "SS_Basic",
+        "title": "Currently Trending Playlists",
+        "subtitle": "",
+        "highlight": "",
+        "simpleHeader": false,
+        "noHeader": false,
+        "source_api": true,
+        "source_params": {
+          "entity_type": "playlist",
+          "entity_language": "hindi"
+        },
+        "view_more": [],
+        "is_JT_module": false
+      },
+      "artists": {
+        "source": "artists",
+        "position": 4,
+        "score": "",
+        "bucket": "",
+        "scroll_type": "SS_Basic",
+        "title": "Artists",
+        "subtitle": "",
+        "highlight": "",
+        "simpleHeader": false,
+        "noHeader": false,
+        "view_more": [],
+        "is_JT_module": false
+      }
+    }
+  }
+
+  return data
+  ;
 };
 
 export const updatePlaylist = async (playlist: any, slug: string) => {

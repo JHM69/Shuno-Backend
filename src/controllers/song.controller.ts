@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import auth from '../utils/auth';
-import {
-  createSong,
-  deleteSong,
-  getSong,
-  getSongs,
-  updateSong,
-} from '../services/songs.service';
+import { getSong, 
+  getSongs, 
+  createSong, 
+  updateSong, 
+  deleteSong
+ } from '../services/songs.service';
+ 
 
 const router = Router();
 

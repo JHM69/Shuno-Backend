@@ -4,6 +4,7 @@ import {
   createPlaylist,
   deletePlaylist,
   getPlaylist,
+  getPlaylistById,
   getPlaylists,
   updatePlaylist,
 } from '../services/playlist.service';
@@ -85,6 +86,27 @@ router.get(
     }
   },
 );
+/**
+ * Get unique playlist
+ * @auth optional
+ * @route {GET} /playlist/:id
+ * @param slug of the playlist (based on the title)
+ * @returns playlist
+ */
+router.get(
+  '/playlist/:slug',
+  auth.optional,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const playlist = await getPlaylistById(req.params.slug);
+      res.json( playlist );
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+
 
 /**
  * Update playlist

@@ -108,6 +108,7 @@ model Artist {
   featuredSongs    Song[]   @relation("FeaturedArtistsSong") 
   images           Image[]  @relation("ArtistImages")
   albums           Album[]  @relation("ArtistAlbums")
+  playlists        Playlist[] @relation("PlaylistArtists")
   addedBy     User             @relation("addedArtists",fields: [userId], references: [id])
   userId    Int
   createdAt DateTime    @default(now())
@@ -156,11 +157,18 @@ model Album {
 
 model Playlist {
   slug         String   @unique
+  name         String
   id           Int      @id @default(autoincrement())  
   primaryImage String?
   username     String 
+  type         String?
+  year         String?
+  subtitle     String?
+  language     String?
+  duration     Int?
   images       Image[]  @relation("PlaylistImages")
   url          String
+  artists     Artist[] @relation("PlaylistArtists")
   songs        Song[]  @relation("PlaylistSongs") 
   genres       Genre[] @relation("PlaylistGenres")
   addedBy      User             @relation("addedPlaylists",fields: [userId], references: [id])
