@@ -1,6 +1,6 @@
 # Shuno Backend
 
-Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks, poem resiting and Youtube audio listning.
+Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks, poem resiting or any kind of audio.
 
 Implementing Shuno-Backend with express js using Postgres Database and prisma.
 
@@ -62,7 +62,7 @@ cd docs
 npx serve
 ```
 Or you can import the Insomnia JSON to view explore the apis.
-also here are the pdf version:
+ 
 ![Login](/docs/screenshots/1.png)
 ![Login](/docs/screenshots/2.png)
 ![Login](/docs/screenshots/3.png)
