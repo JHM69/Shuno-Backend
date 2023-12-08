@@ -1,4 +1,4 @@
-# Shuno
+# Shuno Backend
 
 Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks, poem resiting and Youtube audio listning.
 
