@@ -65,11 +65,11 @@ npx serve
 ```
 Or you can import the Insomnia JSON to view explore the apis.
  
-![Login](/docs/screenshots/1.png)
-![Login](/docs/screenshots/2.png)
-![Login](/docs/screenshots/3.png)
-![Login](/docs/screenshots/4.png)
-![Login](/docs/screenshots/5.png)
+![](/docs/screenshots/1.png)
+![](/docs/screenshots/2.png)
+![](/docs/screenshots/3.png)
+![](/docs/screenshots/4.png)
+![](/docs/screenshots/5.png)
 
  
 
