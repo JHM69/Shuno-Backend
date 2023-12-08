@@ -123,36 +123,18 @@ export const getPlaylistById = async (slug: string) => {
     "id": playlist?.id,
     "title":  playlist?.name,
     "subtitle":  playlist?.subtitle,
-    "header_desc": "playlist?.description",
+     
     "type": "playlist",
     "perma_url": "shuno-cms.com\/playlist\/" + playlist?.id,
     "image": playlist?.primaryImage,
     "language": playlist?.language,
     "year": playlist?.year,
-    "play_count": "0",
-    "explicit_content": "0",
+     
     "list_count":  playlist?.songs.length.toString() || "0",
-    "list_type": "",
+    
     "list": playlist?.songs ,
     "more_info": {
-      "uid": "phulki_user",
-      "is_dolby_content": false,
-      "subtype": [],
-      "last_updated": "1663651559",
-      "username": "phulki_user",
-      "firstname": "JioSaavn",
-      "lastname": "",
-      "is_followed": "",
-      "isFY": false,
-      "follower_count": "0",
-      "fan_count": "0",
-      "playlist_type": "playlist",
-      "share": "1",
-      "sub_types": [],
-      "images": [],
-      "H2": "Trending Songs",
-      "subheading": null,
-      "video_count": "0",
+       
       "artists": playlist?.songs?.map((song: any) =>
           song?.primaryArtists.map((artist: any) => ({
                 "id": artist.slug,
@@ -161,7 +143,6 @@ export const getPlaylistById = async (slug: string) => {
                 "image": artist.primaryImage,
         }))
       ),
-       
     },
     "modules": {
       "list": {

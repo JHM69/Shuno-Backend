@@ -4,6 +4,7 @@ import {
   createAlbum,
   deleteAlbum,
   getAlbum,
+  getAlbumById,
   getAlbums,
   updateAlbum,
 } from '../services/album.service';
@@ -85,6 +86,20 @@ router.get(
     }
   },
 );
+
+router.get(
+  '/album/:slug',
+  auth.optional,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const album = await getAlbumById(req.params.slug);
+      res.json(album);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 
 /**
  * Update album
