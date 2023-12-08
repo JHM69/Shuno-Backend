@@ -2,7 +2,7 @@
 
 Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks, poem resiting and Youtube audio listning.
 
-Implementing Shuno-Backend with express js using MySQL and prisma.
+Implementing Shuno-Backend with express js using Postgres Database and prisma.
 
 
 ## structure
@@ -10,7 +10,6 @@ Implementing Shuno-Backend with express js using MySQL and prisma.
 <!-- A image from public/images folder  -->
 
 ![Shuno-Backend](./public/images/erd.png)
-
 
 
 # Getting started
@@ -33,7 +32,7 @@ create a _.env_ file at the root of the project
 populate it with the url of your database
 
 ```
-DATABASE_URL=mysql://root:@localhost:3306/Shuno
+DATABASE_URL = postgresql://postgres:jhm69@localhost:5432/Shuno
 ```
 
 
@@ -42,19 +41,41 @@ DATABASE_URL=mysql://root:@localhost:3306/Shuno
 run `npm run dev`
 
 ### Prisma
-### Launch Prisma Studio
+```bash
+npx prisma migrate dev
+```
 
+```bash
+npx prisma generate
+```
+
+### Launch Prisma Studio
+Entire Database on Prisma studio
 ```bash
 npm run prisma:studio
 ```
 
-### Reset the database
-
-- Drop the database
-- Create a new database
-- Apply migrations
-- Seed the database with data
-
+# Api Documentation
+To view the api documentation, simply run
 ```bash
-npm run prisma:reset
+cd docs
+npx serve
 ```
+Or you can import the Insomnia JSON to view explore the apis.
+also here are the pdf version:
+![Login](/docs/screenshots/1.png)
+![Login](/docs/screenshots/2.png)
+![Login](/docs/screenshots/3.png)
+![Login](/docs/screenshots/4.png)
+![Login](/docs/screenshots/5.png)
+
+ 
+
+
+
+
+
+
+
+
+
