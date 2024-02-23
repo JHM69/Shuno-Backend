@@ -12,8 +12,11 @@ const app = express();
 /**
  * App Configuration
  */
+app.use(cors({ credentials: true, origin: [
+  'http://localhost:5001',
+  'http://54.80.47.120:5001'
+] }));
 
-app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(routes);
