@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "songs" ALTER COLUMN "releaseDate" SET DEFAULT CURRENT_TIMESTAMP;

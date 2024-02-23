@@ -4,13 +4,15 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  //extensions = [pgvector(map: "vector", schema: "extensions")]  // Add the pgvector extension
 }
-generator dbml {
-  provider = "prisma-dbml-generator"
-}
+// generator dbml {
+//   provider = "prisma-dbml-generator"
+// }
 
 generator client {
   provider        = "prisma-client-js"
+  //previewFeatures = ["postgresqlExtensions"]  // Enable the postgresqlExtensions. Currently in preview
 }
 
 
@@ -77,7 +79,7 @@ model Song {
   slug            String   @unique
   id              Int      @id @default(autoincrement())
   name            String
-  embeddings      Float[]
+ // embedding       Unsupported("vector")?
   album           Album    @relation(fields: [albumId], references: [id])
   albumId         Int
   year            String?

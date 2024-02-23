@@ -52,7 +52,6 @@ Table songs {
   slug String [unique, not null]
   id Int [pk, increment]
   name String [not null]
-  embeddings Float[] [not null]
   album Album [not null]
   albumId Int [not null]
   year String
