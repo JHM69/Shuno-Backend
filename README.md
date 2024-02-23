@@ -22,14 +22,8 @@ Implementing Shuno-Backend with express js using Postgres Database and prisma.
 npm install
 ```
 
-### Start PostgreSQL in Windows
-
-```
-pg_ctl.exe start -D "C:\Program Files\PostgreSQL\16\data"
-```
-
+ 
 ### Connect the created server
-
 create a _.env_ file at the root of the project  
 populate it with the url of your database
 
