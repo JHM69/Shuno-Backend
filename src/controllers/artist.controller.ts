@@ -58,7 +58,7 @@ router.get(
  * @returns artist created artist
  */
 router.post('/artists', auth.required, async (req: Request, res: Response, next: NextFunction) => {
-  
+
   try {
     const artist = await createArtist(req.body, req.user?.username as string);
     res.json({ artist });

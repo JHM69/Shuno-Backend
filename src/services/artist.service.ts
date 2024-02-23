@@ -72,6 +72,11 @@ export const createArtist = async (artist: any, username : string) => {
 
   } = artist;
 
+    // eslint-disable-next-line no-console
+    console.log("creating artist", username )
+    // eslint-disable-next-line no-console
+    console.log(artist)
+
  
  
   if (!name ) {
@@ -125,13 +130,56 @@ export const createArtist = async (artist: any, username : string) => {
       })),
     }
   }
-
-
+ 
   const createdArtist = await prisma.artist.create( {
-    data
-  }).catch(() => { 
-    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
-  }); 
+    data:{
+      name : data.name,
+      slug: data.slug,
+      creatorType: data.creatorType,
+      primaryImage: data.primaryImage,
+      followerCount: data.followerCount,
+      fanCount: data.fanCount,
+      isVerified: data.isVerified,
+      dominantLanguage: data.dominantLanguage,
+
+      dominantType: data.dominantType,
+      bio: data.bio,
+      dob: data.dob,
+      fb: data.fb,
+      twitter: data.twitter,
+      wiki: data.wiki,
+      availableLanguages: data.availableLanguages,
+      isRadioPresent: data.isRadioPresent,
+      isBand: data.isBand,
+      addedBy: {
+        connect: {
+          username,
+        },
+      },
+      genres: {
+        connect: genres.map((genre: any) => ({
+          slug: genre,
+        })),
+      },
+      images: {
+        create: images.map((image: any) => ({
+          url: image.url,
+          type: image.type,
+        })),
+      },
+      bandMembers: {
+        connect: bandMembers.map((bandMember: any) => ({
+          slug: bandMember,
+        })),
+      }
+   }
+  }).catch((e) => { 
+ 
+    throw new HttpException(422, { errors:  e  });
+  }).then(() => {
+ 
+  });
+ 
   return {
     createdArtist 
   };
@@ -173,6 +221,9 @@ export const getArtist = async (slug: string) => {
       }, 
     },
   });
+
+  // eslint-disable-next-line no-console
+  console.log("Added Artist ", artist?.addedBy)
 
   return {
     artist
@@ -220,7 +271,9 @@ export const updateArtist = async (artist: any, slug: string) => {
   }
 
   if(genres[0].slug){
+    // eslint-disable-next-line no-console
     console.log("genres1")
+    // eslint-disable-next-line no-console
     console.log(genres)
     data.genres = {
       connect: genres.map((genre: any) => ({
@@ -230,7 +283,9 @@ export const updateArtist = async (artist: any, slug: string) => {
   }
 
   if (genres && Array.isArray(genres) && genres.every((genre) => typeof genre === 'string')) {
+    // eslint-disable-next-line no-console
     console.log("genres2")
+    // eslint-disable-next-line no-console
     console.log(genres)
     data.genres = { 
       connect: genres.map((genre: string) => ({
@@ -261,6 +316,7 @@ export const updateArtist = async (artist: any, slug: string) => {
       slug,
     },
     data 
+  // eslint-disable-next-line no-unused-vars
   }).catch((e) => {
     throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
     }

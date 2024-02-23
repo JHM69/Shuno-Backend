@@ -4,15 +4,10 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  //extensions = [pgvector(map: "vector", schema: "extensions")]  // Add the pgvector extension
 }
-// generator dbml {
-//   provider = "prisma-dbml-generator"
-// }
 
 generator client {
   provider        = "prisma-client-js"
-  //previewFeatures = ["postgresqlExtensions"]  // Enable the postgresqlExtensions. Currently in preview
 }
 
 
@@ -35,10 +30,31 @@ model Article {
   body        String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now())
+  tagList     Tag[]
   addedBy     User             @relation("added",fields: [userId], references: [id])
   userId    Int
   favorites   User[]          @relation("UserFavorites")
+  comments    Comment[]
 }
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  body      String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int
+  author    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  Int
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  articles Article[]
+}
+
+
 
 
 model User {
@@ -54,6 +70,7 @@ model User {
   following User[] @relation("UserFollows")
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @default(now())
+  comments   Comment[]
   songs      Song[]     @relation("addedSongs")
   playlists  Playlist[] @relation("addedPlaylists")
   albums     Album[]    @relation("addedAlbums")
@@ -63,80 +80,17 @@ model User {
   @@map("users")
 }
 
-model Genre {
-  id   Int    @id @default(autoincrement())
-  slug String @unique
-  name String
-  songs Song[] @relation("SongGenres")
-  artists Artist[] @relation("ArtistGenres")
-  playlists Playlist[] @relation("PlaylistGenres")
-  albums Album[] @relation("AlbumGenres")
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-}
-
-model Song {
-  slug            String   @unique
-  id              Int      @id @default(autoincrement())
-  name            String
- // embedding       Unsupported("vector")?
-  album           Album    @relation(fields: [albumId], references: [id])
-  albumId         Int
-  year            String?
-  releaseDate     DateTime?  @default(now())
-  duration        Int?
-  label           String?
-  primaryArtists  Artist[] @relation("ArtistSongs") 
-  featuredArtists Artist[] @relation("FeaturedArtistsSong") 
-  explicitContent Int?
-  playCount       Int?
-  language        String?
-  hasLyrics       Boolean  @default(false)
-  url             String   
-  copyright       String?
-  contentType     ContentType
-  images          Image[]  @relation("SongImages")
-  primaryImage    String?
-  downloadUrls    SongDownloadUrl[] @relation("SongDownloadUrls")
-  origin             String?
-  lyricsSnippet      String?   @db.Text
-  encryptedMediaUrl  String?
-  encryptedMediaPath String?
-  mediaPreviewUrl    String?
-  permaUrl           String?
-  albumUrl           String?
-  rightId            Int?
-  kbps320            Boolean?
-  isDolbyContent     Boolean?
-  disabled           String?
-  disabledText       String?
-  cacheState         String?
-  vcode              String?
-  trillerAvailable   Boolean
-  labelUrl           String?
-  playLists          Playlist[] @relation("PlaylistSongs")
-  addedBy     User   @relation("addedSongs",fields: [userId], references: [id])
-  userId      Int
-  genres      Genre[]   @relation("SongGenres")
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  likeds     User[] @relation("UserLikes")
-  @@index([name], name: "name")
-  @@map("songs")
-
-}
-
 
 model Artist {
   slug             String   @unique
   id               Int      @id @default(autoincrement())
   name             String
-  creatorType      ContentType
+  creatorType      ContentType @default(MUSIC)
   songs            Song[]    @relation("ArtistSongs") 
   primaryImage     String?
-  followerCount    Int
-  fanCount         Int
-  isVerified       Boolean
+  followerCount    Int?
+  fanCount         Int?
+  isVerified       Boolean?  @default(false)
   dominantLanguage String?
   dominantType     String?
   bio              String?
@@ -145,18 +99,18 @@ model Artist {
   twitter          String?
   wiki             String?
   availableLanguages String?
-  isRadioPresent   Boolean?
-  isBand           Boolean
+  isRadioPresent   Boolean?  @default(false)
+  isBand           Boolean?  @default(false)
   bandMembers      Artist[]  @relation("BandMembers")
   bandMemberOf     Artist[]  @relation("BandMembers")
-  primaryAlbums    Album[]  @relation("PrimaryArtists") 
-  featuredAlbums   Album[]  @relation("FeaturedArtists") 
-  featuredSongs    Song[]   @relation("FeaturedArtistsSong") 
-  images           Image[]  @relation("ArtistImages")
-  albums           Album[]  @relation("ArtistAlbums")
+  primaryAlbums    Album[]   @relation("PrimaryArtists") 
+  featuredAlbums   Album[]   @relation("FeaturedArtists") 
+  featuredSongs    Song[]    @relation("FeaturedArtistsSong") 
+  images           Image[]   @relation("ArtistImages")
+  albums           Album[]   @relation("ArtistAlbums")
   playlists        Playlist[] @relation("PlaylistArtists")
   addedBy     User             @relation("addedArtists",fields: [userId], references: [id])
-  userId    Int
+  userId    Int         
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   genres      Genre[]   @relation("ArtistGenres")
@@ -221,6 +175,68 @@ model Playlist {
   userId    Int
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+}
+
+model Genre {
+  id   Int    @id @default(autoincrement())
+  slug String @unique
+  name String
+  songs Song[] @relation("SongGenres")
+  artists Artist[] @relation("ArtistGenres")
+  playlists Playlist[] @relation("PlaylistGenres")
+  albums Album[] @relation("AlbumGenres")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Song {
+  slug            String   @unique
+  id              Int      @id @default(autoincrement())
+  name            String
+  album           Album    @relation(fields: [albumId], references: [id])
+  albumId         Int
+  year            String?
+  releaseDate     DateTime?  @default(now())
+  duration        Int?
+  label           String?
+  primaryArtists  Artist[] @relation("ArtistSongs") 
+  featuredArtists Artist[] @relation("FeaturedArtistsSong") 
+  explicitContent Int?
+  playCount       Int?
+  language        String?
+  hasLyrics       Boolean  @default(false)
+  url             String   
+  copyright       String?
+  contentType     ContentType
+  images          Image[]  @relation("SongImages")
+  primaryImage    String?
+  downloadUrls    SongDownloadUrl[] @relation("SongDownloadUrls")
+  origin             String?
+  lyricsSnippet      String?   @db.Text
+  encryptedMediaUrl  String?
+  encryptedMediaPath String?
+  mediaPreviewUrl    String?
+  permaUrl           String?
+  albumUrl           String?
+  rightId            Int?
+  kbps320            Boolean?
+  isDolbyContent     Boolean?
+  disabled           String?
+  disabledText       String?
+  cacheState         String?
+  vcode              String?
+  trillerAvailable   Boolean
+  labelUrl           String?
+  playLists          Playlist[] @relation("PlaylistSongs")
+  addedBy     User   @relation("addedSongs",fields: [userId], references: [id])
+  userId      Int
+  genres      Genre[]   @relation("SongGenres")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  likeds     User[] @relation("UserLikes")
+  @@index([name], name: "name")
+  @@map("songs")
+
 }
 
 model Image {
