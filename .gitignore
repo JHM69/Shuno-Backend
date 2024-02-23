@@ -4,6 +4,9 @@
 # Keep environment variables out of version control
 .env
 
+# pem files
+*.pem
+
 # IDEs and editors
 /.idea
 .project
