@@ -6,9 +6,8 @@ import HttpException from './models/http-exception.model';
 import { upload } from './upload';
 import { uploadToS3 } from './s3Upload';
 
- 
 const app = express();
- 
+
 
 /**
  * App Configuration
@@ -30,6 +29,7 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
     const fileUrl = await uploadToS3(req.file, 'shunofiles', 'images');
     res.json({ message: 'Image uploaded successfully', fileUrl });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log(error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'An error occurred' });
   }
@@ -38,9 +38,10 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) throw new Error("File is required");
-    const fileUrl = await uploadToS3(req.file, 'shunoaudio', 'audios');
+    const fileUrl = await uploadToS3(req.file, 'shunofiles', 'audios');
     res.json({ message: 'Audio uploaded successfully', fileUrl });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log(error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'An error occurred' });
   }

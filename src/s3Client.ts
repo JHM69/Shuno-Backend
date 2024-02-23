@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 // s3Client.ts
 import { S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 
