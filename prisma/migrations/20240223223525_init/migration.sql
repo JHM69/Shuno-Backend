@@ -41,7 +41,7 @@ CREATE TABLE "users" (
     "email" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "image" TEXT DEFAULT 'https://api.realworld.io/images/smiley-cyrus.jpeg',
+    "image" TEXT DEFAULT 'http://54.80.47.120:5001/logo.png',
     "bio" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

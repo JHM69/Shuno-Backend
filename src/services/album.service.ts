@@ -100,7 +100,7 @@ trillerUrl
 coverImage ,
 duration : Number(duration) || 0,
 
-isPremium : (isPremium === "true") ? true : false ,
+isPremium : (isPremium === "true") ,
 label ,
 language: language || "Bangla" ,
 name ,
@@ -116,7 +116,7 @@ mainArtist : {
 trillerUrl,
 releaseDate: new Date(releaseDate) , 
 releaseYear : new Date(releaseDate).getFullYear().toString() ,
-trillerAvailable : (trillerAvailable === "true") ? true : false,
+trillerAvailable : (trillerAvailable === "true"),
     addedBy: {
       connect: {
         username,
@@ -126,8 +126,14 @@ trillerAvailable : (trillerAvailable === "true") ? true : false,
 
     if(genres) {
       data.genres = {
-        connect: genres.map((genre: any) => ({
-          slug: genre,
+        connectOrCreate: genres.map((genre: any) => ({
+          where: {
+            slug: genre,
+          },
+          create: {
+            slug: `${slugify(genre)}`,
+            name: genre,
+          },
         })),
       };
     }
@@ -161,7 +167,6 @@ trillerAvailable : (trillerAvailable === "true") ? true : false,
       console.log(e);
       throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
     });
-
 
   return {
     album : al
@@ -260,7 +265,7 @@ export const getAlbumById = async (slug: string) => {
     "subtitle":  album?.label,
     "header_desc": "album?.description",
     "type": "album",
-    "perma_url": "shuno-cms.com\/album\/" + album?.id,
+    "perma_url": `shuno-cms/album/${album?.slug}`,
     "image": album?.coverImage,
     "language": album?.language,
     "list_count":  album?.songs.length.toString() || "0",
@@ -388,7 +393,7 @@ trillerUrl
 coverImage ,
 duration : Number(duration) || 0,
 
-isPremium : (isPremium === "true") ? true : false ,
+isPremium : (isPremium === "true") ,
 label ,
 language: language || "Bangla" ,
 name, 
@@ -400,7 +405,7 @@ mainArtist : {
 trillerUrl,
 releaseDate: new Date(releaseDate) , 
 releaseYear : new Date(releaseDate).getFullYear().toString() ,
-trillerAvailable : (trillerAvailable === "true") ? true : false,
+trillerAvailable : (trillerAvailable === "true"),
     }
 
     if(genres) {

@@ -62,7 +62,7 @@ model User {
   email      String    @unique
   username   String    @unique
   password   String
-  image      String?   @default("https://api.realworld.io/images/smiley-cyrus.jpeg")
+  image      String?   @default("http://54.80.47.120:5001/logo.png")
   bio        String?
   articles   Article[]   @relation("added")
   favorites  Article[]   @relation("UserFavorites")
@@ -87,18 +87,18 @@ model Artist {
   name             String
   creatorType      ContentType @default(MUSIC)
   songs            Song[]    @relation("ArtistSongs") 
-  primaryImage     String?
-  followerCount    Int?
-  fanCount         Int?
+  primaryImage     String?   @default("http://54.80.47.120:5001/logo.png")
+  followerCount    Int?      @default(0)
+  fanCount         Int?      @default(0)
   isVerified       Boolean?  @default(false)
-  dominantLanguage String?
-  dominantType     String?
-  bio              String?
-  dob              String?
-  fb               String?
-  twitter          String?
-  wiki             String?
-  availableLanguages String?
+  dominantLanguage String?   @default("en")
+  dominantType     String?   @default("singer")
+  bio              String?   @default("This is a bio")
+  dob              String?   @default("2021-01-01")
+  fb               String?   @default("https://www.facebook.com/")
+  twitter          String?   @default("https://twitter.com/home")
+  wiki             String?   @default("https://en.wikipedia.org/wiki/Main_Page")
+  availableLanguages String? @default("en")
   isRadioPresent   Boolean?  @default(false)
   isBand           Boolean?  @default(false)
   bandMembers      Artist[]  @relation("BandMembers")
@@ -107,17 +107,16 @@ model Artist {
   featuredAlbums   Album[]   @relation("FeaturedArtists") 
   featuredSongs    Song[]    @relation("FeaturedArtistsSong") 
   images           Image[]   @relation("ArtistImages")
-  albums           Album[]   @relation("ArtistAlbums")
+  albums           Album[]   @relation("ArtistAlbums")  
   playlists        Playlist[] @relation("PlaylistArtists")
   addedBy     User             @relation("addedArtists",fields: [userId], references: [id])
-  userId    Int         
+  userId    Int         @default(1)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   genres      Genre[]   @relation("ArtistGenres")
+  followers User[] @relation("UserFollows")
   @@index([name])
   @@map("artists")
-
-  followers User[] @relation("UserFollows")
 }
 
 model Album {
@@ -241,10 +240,10 @@ model Song {
 
 model Image {
   id      Int      @id @default(autoincrement())
-  quality String
-  link    String
+  quality String   @default("hd")
+  link    String?
   artist  Artist?  @relation("ArtistImages", fields: [artistId], references: [id])
-  artistId Int?
+  artistId Int?    
   album   Album?   @relation("AlbumImages", fields: [albumId], references: [id])
   albumId Int?
   playlist Playlist? @relation("PlaylistImages", fields: [playlistId], references: [id])
@@ -255,8 +254,8 @@ model Image {
 
 model SongDownloadUrl {
   id       Int      @id @default(autoincrement())
-  quality  String
-  link     String
+  quality  String?
+  link     String?
   song     Song     @relation("SongDownloadUrls",fields: [songId], references: [id])
   songId   Int
 }

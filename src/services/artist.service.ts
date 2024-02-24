@@ -69,18 +69,19 @@ export const createArtist = async (artist: any, username : string) => {
     primaryImage,
     images,
     bandMembers,
-
   } = artist;
 
     // eslint-disable-next-line no-console
     console.log("creating artist", username )
     // eslint-disable-next-line no-console
     console.log(artist)
+    console.log(artist.bandMembers)
+    console.log(artist.genres)
+ 
 
  
- 
   if (!name ) {
-    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
+    throw new HttpException(422, { errors: { title: [" Name fields are missing"] } });
   } 
 
   const data : any = {
@@ -99,7 +100,7 @@ export const createArtist = async (artist: any, username : string) => {
     twitter,
     wiki,
     availableLanguages,
-    isRadioPresent,
+    isRadioPresent : (isRadioPresent === "true"),
     isBand: (isBand === "true"),
     addedBy: {
       connect: {
@@ -107,23 +108,24 @@ export const createArtist = async (artist: any, username : string) => {
       },
     },
   }
-
-  if(genres){
-    data.genres = {
-      connect: genres.map((genre: any) => ({
-        slug: genre,
-      })),
-    }
-  }
-  if(images){
     data.images = {
-      create: images.map((image: any) => ({
-        url: image.url,
-        type: image.type,
+      create: {
+         link : primaryImage,
+         quality: "primary",
+      },
+    }
+  
+
+  if(genres && genres.length > 0){
+    data.genres = {
+      connectOrCreate: genres.map((genre: any) => ({
+        where: { slug: genre },
+        create: { slug: genre, name: genre },
       })),
     }
   }
-  if(bandMembers){
+
+  if(bandMembers && bandMembers.length > 0){
     data.bandMembers = {
       connect: bandMembers.map((bandMember: any) => ({
         slug: bandMember,
@@ -131,54 +133,75 @@ export const createArtist = async (artist: any, username : string) => {
     }
   }
  
-  const createdArtist = await prisma.artist.create( {
-    data:{
-      name : data.name,
-      slug: data.slug,
-      creatorType: data.creatorType,
-      primaryImage: data.primaryImage,
-      followerCount: data.followerCount,
-      fanCount: data.fanCount,
-      isVerified: data.isVerified,
-      dominantLanguage: data.dominantLanguage,
+  const userExists = await prisma.user.findUnique({
+    where: {
+      username,
+    },
+  });
+  
+  if (!userExists) {
+    throw new Error('User not found');
+  }
+  
 
-      dominantType: data.dominantType,
-      bio: data.bio,
-      dob: data.dob,
-      fb: data.fb,
-      twitter: data.twitter,
-      wiki: data.wiki,
-      availableLanguages: data.availableLanguages,
-      isRadioPresent: data.isRadioPresent,
-      isBand: data.isBand,
-      addedBy: {
-        connect: {
-          username,
-        },
-      },
-      genres: {
-        connect: genres.map((genre: any) => ({
-          slug: genre,
-        })),
-      },
-      images: {
-        create: images.map((image: any) => ({
-          url: image.url,
-          type: image.type,
-        })),
-      },
-      bandMembers: {
-        connect: bandMembers.map((bandMember: any) => ({
-          slug: bandMember,
-        })),
-      }
-   }
+  const createdArtist = await prisma.artist.create({
+    data,
   }).catch((e) => { 
- 
+    // eslint-disable-next-line no-console
+    console.log(e)
     throw new HttpException(422, { errors:  e  });
   }).then(() => {
- 
+     // eslint-disable-next-line no-console
+     console.log("Artist Created")
   });
+ 
+  // const createdArtist = await prisma.artist.create( {
+  //   data:{
+  //     name : data.name,
+  //     slug: data.slug,
+  //     creatorType: data.creatorType,
+  //     primaryImage: data.primaryImage,
+  //     followerCount: data.followerCount,
+  //     fanCount: data.fanCount,
+  //     isVerified: data.isVerified,
+  //     dominantLanguage: data.dominantLanguage,
+
+  //     dominantType: data.dominantType,
+  //     bio: data.bio,
+  //     dob: data.dob,
+  //     fb: data.fb,
+  //     twitter: data.twitter,
+  //     wiki: data.wiki,
+  //     availableLanguages: data.availableLanguages,
+  //     isRadioPresent: data.isRadioPresent,
+  //     isBand: data.isBand,
+  //     addedBy: {
+  //       connect: {
+  //         username,
+  //       },
+  //     },
+  //     genres: {
+  //       connect: genres.map((genre: any) => ({
+  //         slug: genre,
+  //       })),
+  //     },
+  //     images: {
+  //       create: images.map((image: any) => ({
+  //         url: image.url,
+  //         type: image.type,
+  //       })),
+  //     },
+  //     bandMembers: {
+  //       connect: bandMembers.map((bandMember: any) => ({
+  //         slug: bandMember,
+  //       })),
+  //     }
+  //  }
+  // }).catch((e) => { 
+  //   throw new HttpException(422, { errors:  e  });
+  // }).then(() => {
+
+  // });
  
   return {
     createdArtist 

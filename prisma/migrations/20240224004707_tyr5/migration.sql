@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Image" ALTER COLUMN "quality" SET DEFAULT 'hd',
+ALTER COLUMN "link" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "SongDownloadUrl" ALTER COLUMN "quality" DROP NOT NULL,
+ALTER COLUMN "link" DROP NOT NULL;
