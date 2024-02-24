@@ -1,7 +1,11 @@
+/* eslint-disable import/no-extraneous-dependencies */
 
 import slugify from 'slugify';
-import prisma from '../../prisma/prisma-client';
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { TaskType } from "@google/generative-ai";
+import prisma, { songStore } from '../../prisma/prisma-client';
 import HttpException from '../models/http-exception.model';
+
 
 const buildFindAllQuery = (query: any, username: string | undefined) => {
   const queries: any = [];
@@ -109,6 +113,8 @@ export const createSong = async (song: any, username : string) => {
     language,
     hasLyrics,
     url,
+    tags,
+    mood,
     copyright,
     contentType,
     origin,
@@ -119,9 +125,13 @@ export const createSong = async (song: any, username : string) => {
     isDolbyContent, 
     trillerAvailable ,  
     primaryImage,
-    images,
-    downloadUrls,
+    images, 
   } = song;
+
+
+    
+
+
   
   
   const data : any = {
@@ -145,6 +155,8 @@ export const createSong = async (song: any, username : string) => {
     mediaPreviewUrl,
     permaUrl,
     albumUrl: "", 
+    tags,
+    mood,
     kbps320 : (kbps320 === "true"),
     isDolbyContent : (isDolbyContent === "true"),
     disabled: "false",
@@ -160,7 +172,8 @@ export const createSong = async (song: any, username : string) => {
     }
   } 
 
-  console.log("1"); 
+
+
  
   if(primaryArtists){
     data.primaryArtists = {
@@ -169,8 +182,7 @@ export const createSong = async (song: any, username : string) => {
       })),
     }
   }
-  console.log("2"); 
-
+ 
 
   if(featuredArtists){
     data.featuredArtists = {
@@ -179,9 +191,7 @@ export const createSong = async (song: any, username : string) => {
       })),
     }
   }
-
-  console.log("3"); 
-
+ 
   
   if(genres){
     data.genres = {
@@ -190,8 +200,7 @@ export const createSong = async (song: any, username : string) => {
       })),
     }
   }
-
-  console.log("4"); 
+ 
 
 
   if(images){
@@ -201,8 +210,7 @@ export const createSong = async (song: any, username : string) => {
         type: image.type,
       })),
     }
-  }
-  console.log("5"); 
+  } 
 
   // if(downloadUrls && downloadUrls.length > 0){
   //   data.downloadUrls = {
@@ -213,16 +221,64 @@ export const createSong = async (song: any, username : string) => {
   //   }
   // }
 
-  console.log(JSON.stringify(data)); 
+  // const embeddings = new GoogleGenerativeAIEmbeddings({
+  //   modelName: "embedding-001", // 768 dimensions
+  //   taskType: TaskType.CLASSIFICATION,
+  //   title: data.name,
+  // });
+
+  // data.vector = await embeddings.embedQuery( `
+  //   -- Song Information -- \n
+  //   Song Name: ${data.name} \n
+  //   Album Name: ${data.album.name} \n
+  //   Primary Artists: ${data.primaryArtists.map((artist: any) => artist.name).join(", ")} \n
+  //   Featured Artists: ${data.featuredArtists.map((artist: any) => artist.name).join(", ")} \n
+  //   Genres: ${data.genres.map((genre: any) => genre.name).join(", ")} \n
+  //   Language: ${data.language} \n
+  //   Year: ${data.year} \n
+  //   Label: ${data.label} \n
+  //   Lyrics: ${data.hasLyrics} \n
+  //   Duration: ${data.duration} \n
+  //   Tags : ${data.tags} \n
+  //   Mood : ${data.mood} \n
+  // ` ).then ( (vector) => {
+  //   console.log("Vector Created for Song");
+  //   console.log(vector);
+  //   return vector;
+  // }).catch((e) => {
+  //   console.log("Error in creating Vector for Song");
+  //   console.log(e);
+
+  //   return [];
+  // });
+
 
  
+
 
   const s =  await prisma.song.create( {
     data
   }).catch((e) => { 
-    console.log(e);
     throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
-  }); 
+  }).then(() => {
+
+    try{
+      console.log("Created Song Vector");
+      songStore.addDocuments([data]).then(() => {
+        console.log("Added Song to Vector Store");
+      }).catch((e) => {
+        console.log("Error in Adding Song to Vector Store");
+        console.log(e);
+        throw new HttpException(422, { errors: { title: ["Added Song, Failed in embeddings"] } });
+      });
+    }catch(e){
+      console.log("Error in Adding Song to Vector Store");
+      console.log(e);
+      throw new HttpException(422, { errors: { title: ["Added Song, Failed in embeddings"] } });
+    }
+   
+  });
+
 
   return {
     song: s
@@ -238,7 +294,6 @@ export const getSong = async (slug: string) => {
       genres: {
         select: {
           slug: true,
-
         },
       },
       primaryArtists: {

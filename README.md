@@ -65,6 +65,18 @@ Or you can import the Insomnia JSON to view explore the apis.
 ![](/docs/screenshots/4.png)
 ![](/docs/screenshots/5.png)
 
+
+
+
+Extra 
+
+
+rm -rf prisma/migrations
+mkdir -p prisma/migrations/0_init
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0_init/migration.sql
+npx prisma migrate resolve --applied 0_init
+
+
  
 
 

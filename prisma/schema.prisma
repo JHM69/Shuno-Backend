@@ -198,6 +198,8 @@ model Song {
   releaseDate     DateTime?  @default(now())
   duration        Int?
   label           String?
+  tags            String?    
+  mood            String?
   primaryArtists  Artist[] @relation("ArtistSongs") 
   featuredArtists Artist[] @relation("FeaturedArtistsSong") 
   explicitContent Int?
@@ -233,9 +235,9 @@ model Song {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   likeds     User[] @relation("UserLikes")
+  vector  Unsupported("vector")?
   @@index([name], name: "name")
   @@map("songs")
-
 }
 
 model Image {

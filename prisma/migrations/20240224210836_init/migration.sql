@@ -54,11 +54,11 @@ CREATE TABLE "artists" (
     "slug" TEXT NOT NULL,
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "creatorType" "ContentType" NOT NULL,
-    "primaryImage" TEXT,
-    "followerCount" INTEGER,
-    "fanCount" INTEGER,
-    "isVerified" BOOLEAN NOT NULL,
+    "creatorType" "ContentType" NOT NULL DEFAULT 'MUSIC',
+    "primaryImage" TEXT DEFAULT 'http://54.80.47.120:5001/logo.png',
+    "followerCount" INTEGER DEFAULT 0,
+    "fanCount" INTEGER DEFAULT 0,
+    "isVerified" BOOLEAN DEFAULT false,
     "dominantLanguage" TEXT,
     "dominantType" TEXT,
     "bio" TEXT,
@@ -66,10 +66,10 @@ CREATE TABLE "artists" (
     "fb" TEXT,
     "twitter" TEXT,
     "wiki" TEXT,
-    "availableLanguages" TEXT,
-    "isRadioPresent" BOOLEAN,
-    "isBand" BOOLEAN,
-    "userId" INTEGER NOT NULL,
+    "availableLanguages" TEXT DEFAULT 'bn',
+    "isRadioPresent" BOOLEAN DEFAULT false,
+    "isBand" BOOLEAN DEFAULT false,
+    "userId" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -138,6 +138,10 @@ CREATE TABLE "Genre" (
     CONSTRAINT "Genre_pkey" PRIMARY KEY ("id")
 );
 
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+
 -- CreateTable
 CREATE TABLE "songs" (
     "slug" TEXT NOT NULL,
@@ -145,6 +149,7 @@ CREATE TABLE "songs" (
     "name" TEXT NOT NULL,
     "albumId" INTEGER NOT NULL,
     "year" TEXT,
+    "vector" vector,
     "releaseDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "duration" INTEGER,
     "label" TEXT,
@@ -182,8 +187,8 @@ CREATE TABLE "songs" (
 -- CreateTable
 CREATE TABLE "Image" (
     "id" SERIAL NOT NULL,
-    "quality" TEXT NOT NULL,
-    "link" TEXT NOT NULL,
+    "quality" TEXT NOT NULL DEFAULT 'hd',
+    "link" TEXT,
     "artistId" INTEGER,
     "albumId" INTEGER,
     "playlistId" INTEGER,
@@ -195,8 +200,8 @@ CREATE TABLE "Image" (
 -- CreateTable
 CREATE TABLE "SongDownloadUrl" (
     "id" SERIAL NOT NULL,
-    "quality" TEXT NOT NULL,
-    "link" TEXT NOT NULL,
+    "quality" TEXT,
+    "link" TEXT,
     "songId" INTEGER NOT NULL,
 
     CONSTRAINT "SongDownloadUrl_pkey" PRIMARY KEY ("id")
