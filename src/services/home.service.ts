@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 
  
 import prisma from '../../prisma/prisma-client';
@@ -66,6 +67,7 @@ export const getHomeData = async (query: any, username?: string) => {
   });
 
 
+  // eslint-disable-next-line camelcase
   const new_trending  = playlists.map((playlist: any) => ({
     id: playlist.slug,
     title: playlist.name,

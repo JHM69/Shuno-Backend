@@ -30,6 +30,9 @@ export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
     columns: {
       id: PrismaVectorStore.IdColumn,
       name : PrismaVectorStore.ContentColumn,
+      slug : PrismaVectorStore.ContentColumn,
+      label : PrismaVectorStore.ContentColumn,
+      primaryImage : PrismaVectorStore.ContentColumn,
       duration : PrismaVectorStore.ContentColumn,
       year : PrismaVectorStore.ContentColumn,
       origin : PrismaVectorStore.ContentColumn,
@@ -37,12 +40,7 @@ export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
       tags : PrismaVectorStore.ContentColumn,
       mood : PrismaVectorStore.ContentColumn,
       lyricsSnippet : PrismaVectorStore.ContentColumn,
-    },
-    filter: {
-      content: {
-        equals: "default",
-      },
-    },
+    }
   }
 );
 

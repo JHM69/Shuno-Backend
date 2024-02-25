@@ -39,21 +39,7 @@ export const getSongs = async (query: any, username?: string) => {
       },
     });
   }
-
-     console.log("Searching for Similar Songs");
-     console.log(query.search);
-      await songStore.similaritySearch(query.search, 10, "default").catch((e) => {
-        console.log("Error in Similarity Search");
-        console.log(e);
-        
-      }).then((result) => {
-        console.log("Similarity Search Result");
-        console.log(result);
-        
-      });
-
-
-
+ 
   const songs = await prisma.song.findMany({
     where: { AND: andQueries },
     orderBy: {
@@ -114,6 +100,15 @@ export const getSongs = async (query: any, username?: string) => {
     songsCount,
   };
 };
+
+
+export const aiSearchSongs = async (query: any) => {
+  const result = await songStore.similaritySearchWithScore(query.search, 1);
+  console.log(result);
+  return {
+    result,
+  };
+}
 
 export const createSong = async (song: any, username : string) => {
   const { 

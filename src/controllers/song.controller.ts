@@ -1,10 +1,12 @@
+/* eslint-disable no-console */
 import { NextFunction, Request, Response, Router } from 'express';
 import auth from '../utils/auth';
 import { getSong, 
   getSongs, 
   createSong, 
   updateSong, 
-  deleteSong
+  deleteSong,
+  aiSearchSongs
  } from '../services/songs.service';
  
 
@@ -30,24 +32,18 @@ router.get('/songs', auth.optional, async (req: Request, res: Response, next: Ne
   }
 });
 
-/**
- * Get paginated feed songs
- * @auth required
- * @route {GET} /songs/feed
- * @returns songs list of songs
- */
+ 
 router.get(
-  '/songs',
-  auth.required,
+  '/ai-search-songs',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json("result");
+      const result = await aiSearchSongs(req.query);
+      res.json(result);
     } catch (error) {
       next(error);
     }
   },
 );
-
 /**
  * Create song
  * @route {POST} /songs
