@@ -1,10 +1,12 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 
 import slugify from 'slugify';
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { TaskType } from "@google/generative-ai";
+
 import prisma, { songStore } from '../../prisma/prisma-client';
 import HttpException from '../models/http-exception.model';
+import { Song } from '@prisma/client';
 
 
 const buildFindAllQuery = (query: any, username: string | undefined) => {
@@ -37,6 +39,19 @@ export const getSongs = async (query: any, username?: string) => {
       },
     });
   }
+
+     console.log("Searching for Similar Songs");
+     console.log(query.search);
+      await songStore.similaritySearch(query.search, 10, "default").catch((e) => {
+        console.log("Error in Similarity Search");
+        console.log(e);
+        throw new HttpException(422, { errors: { title: ["Error in Searching Similar Songs"] } });
+      }).then((result) => {
+        console.log("Similarity Search Result");
+        console.log(result);
+        return result;
+      });
+
 
 
   const songs = await prisma.song.findMany({
@@ -126,14 +141,15 @@ export const createSong = async (song: any, username : string) => {
     trillerAvailable ,  
     primaryImage,
     images, 
+    downloadUrls
   } = song;
 
 
-    
+  console.log("Creating Song");
 
+  console.log({tags});
+  console.log({mood});
 
-  
-  
   const data : any = {
     slug : `${slugify(name)}`,
     name,
@@ -212,77 +228,64 @@ export const createSong = async (song: any, username : string) => {
     }
   } 
 
-  // if(downloadUrls && downloadUrls.length > 0){
-  //   data.downloadUrls = {
-  //     create: downloadUrls.map((downloadUrl: any) => ({
-  //       url: downloadUrl.url,
-  //       type: downloadUrl.type,
-  //     })),
-  //   }
-  // }
+  if(downloadUrls && downloadUrls.length > 0){
+    data.downloadUrls = {
+      create: downloadUrls.map((downloadUrl: any) => ({
+        url: downloadUrl.url,
+        type: downloadUrl.type,
+      })),
+    }
+  } 
 
-  // const embeddings = new GoogleGenerativeAIEmbeddings({
-  //   modelName: "embedding-001", // 768 dimensions
-  //   taskType: TaskType.CLASSIFICATION,
-  //   title: data.name,
-  // });
+  const content = `
+  -- Song Information -- \n
+  Song Name: ${data.name} \n 
+  Primary Artists: ${primaryArtists.map((artist: any) => artist).join(", ")} \n
+  Featured Artists: ${featuredArtists.map((artist: any) => artist).join(", ")} \n
+  Genres: ${genres.map((genre: any) => genre).join(", ")} \n
+  Language: ${data.language} \n
+  Year: ${data.year} \n
+  Label: ${data.label} \n
+  Duration: ${data.duration} \n
+  Tags : ${data.tags} \n
+  Mood : ${data.mood} \n
+  Lyrics: ${data.lyricsSnippet} \n `;
 
-  // data.vector = await embeddings.embedQuery( `
-  //   -- Song Information -- \n
-  //   Song Name: ${data.name} \n
-  //   Album Name: ${data.album.name} \n
-  //   Primary Artists: ${data.primaryArtists.map((artist: any) => artist.name).join(", ")} \n
-  //   Featured Artists: ${data.featuredArtists.map((artist: any) => artist.name).join(", ")} \n
-  //   Genres: ${data.genres.map((genre: any) => genre.name).join(", ")} \n
-  //   Language: ${data.language} \n
-  //   Year: ${data.year} \n
-  //   Label: ${data.label} \n
-  //   Lyrics: ${data.hasLyrics} \n
-  //   Duration: ${data.duration} \n
-  //   Tags : ${data.tags} \n
-  //   Mood : ${data.mood} \n
-  // ` ).then ( (vector) => {
-  //   console.log("Vector Created for Song");
-  //   console.log(vector);
-  //   return vector;
-  // }).catch((e) => {
-  //   console.log("Error in creating Vector for Song");
-  //   console.log(e);
-
-  //   return [];
-  // });
+  data.content = content;
 
 
- 
+  console.log(content);
 
 
-  const s =  await prisma.song.create( {
-    data
+  await prisma.song.create( {
+    data:{
+      ...data,
+      content,
+    }
   }).catch((e) => { 
-    throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
-  }).then(() => {
-
-    try{
-      console.log("Created Song Vector");
-      songStore.addDocuments([data]).then(() => {
-        console.log("Added Song to Vector Store");
-      }).catch((e) => {
-        console.log("Error in Adding Song to Vector Store");
-        console.log(e);
-        throw new HttpException(422, { errors: { title: ["Added Song, Failed in embeddings"] } });
-      });
-    }catch(e){
+    console.log("Error in Creating Song");
+    console.log(e);
+    throw new HttpException(422, { errors: { title: ["Error in Creating Song"] } });
+  }).then(async (songData) => {
+    console.log("Song Created");
+    await songStore.addModels([songData]).then(() => {
+      console.log("Added Song to Vector Store");
+      return {
+        song: songData,
+        message : "Added Song with embeddings"
+      };
+    }).catch((e) => {
       console.log("Error in Adding Song to Vector Store");
       console.log(e);
-      throw new HttpException(422, { errors: { title: ["Added Song, Failed in embeddings"] } });
-    }
-   
+      return {
+        song: songData,
+        message : "Added Song, Failed in embeddings"
+      };
+      
+     }
+    );
   });
 
-
-  return {
-    song: s
-  };
 };
 
 export const getSong = async (slug: string) => {
@@ -339,18 +342,126 @@ export const getSong = async (slug: string) => {
   };
 };
 
-export const updateSong = async (song: any, slug: string) => {
+export const updateSong = async (song: any, id: string) => {
+
+  // const { namne  } = song;
+  console.log("Updating Song");
+  console.log({song});
+  const { name, releaseDate, copyright, duration, label, language, hasLyrics, url, tags, mood, contentType, origin, lyricsSnippet, mediaPreviewUrl, permaUrl, kbps320, isDolbyContent, trillerAvailable, primaryImage, images, albumSlug, primaryArtists, featuredArtists, genres } = song;
+
+
+  const data : any = {
+    slug : `${slugify(name)}`,
+    name,
+    year: new Date(releaseDate).getFullYear().toString(),
+    releaseDate: new Date(releaseDate),
+    duration : Number(duration),
+    label,
+    primaryImage,  
+    playCount: 0,
+    language,
+    url,
+    copyright,
+    contentType,
+    origin,
+    lyricsSnippet,
+    hasLyrics: (hasLyrics === "true"),
+    encryptedMediaUrl: "",
+    encryptedMediaPath: "",
+    mediaPreviewUrl,
+    permaUrl,
+    albumUrl: "", 
+    tags,
+    mood,
+    kbps320 : (kbps320 === "true"),
+    isDolbyContent : (isDolbyContent === "true"),
+    disabled: "false",
+    disabledText: "",
+    cacheState: "", 
+    trillerAvailable : (trillerAvailable === "true"),
+    labelUrl: "",
+    album : {
+      connect : {
+        slug : albumSlug
+      }
+    }
+  } 
+
+ 
+  if(primaryArtists){
+    data.primaryArtists = {
+      connect: primaryArtists.map((artist: any) => ({
+        slug: artist,
+      })),
+    }
+  }
+ 
+
+  if(featuredArtists){
+    data.featuredArtists = {
+      connect: featuredArtists.map((artist: any) => ({
+        slug: artist,
+      })),
+    }
+  }
+ 
+  
+  if(genres){
+    data.genres = {
+      connect: genres.map((genre: any) => ({
+        slug: genre,
+      })),
+    }
+  }
+ 
+
+
+  if(images){
+    data.images = {
+      create: images.map((image: any) => ({
+        url: image.url,
+        type: image.type,
+      })),
+    }
+  } 
+
+  delete data.content;
+
+  const content = `
+  -- Song Information -- \n
+  Song Name: ${data.name} \n 
+  Primary Artists: ${primaryArtists?.map((artist: any) => artist).join(", ")} \n
+  Featured Artists: ${featuredArtists.map((artist: any) => artist).join(", ")} \n
+  Genres: ${genres.map((genre: any) => genre).join(", ")} \n
+  Language: ${data.language} \n
+  Year: ${data.year} \n
+  Label: ${data.label} \n
+  Duration: ${data.duration} \n
+  Tags : ${data.tags} \n
+  Mood : ${data.mood} \n
+  Lyrics: ${data.lyricsSnippet} \n `;
+
+  console.log(content);
 
   const updatedSong = await prisma.song.update({
     where: {
-      slug,
+      id : Number(id),
     },
     data: {
       slug : `${slugify(song.name)}`,
-      ...song
+      ...data,
+      content,
     },
-   
   });
+
+  await songStore.addModels([updatedSong]).then(() => {
+    console.log("Added Song to Vector Store");
+  }).catch((e) => {
+    console.log("Error in Adding Song to Vector Store");
+    console.log(e);
+    throw new HttpException(422, { errors: { title: ["Added Song, Failed in embeddings"] } });
+   }
+  );
 
   return {
     updatedSong

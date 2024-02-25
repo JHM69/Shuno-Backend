@@ -97,16 +97,18 @@ router.get(
  * @returns song updated song
  */
 router.put(
-  '/songs/:slug',
+  '/songs/:id',
   auth.required,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const song = await updateSong(
-        req.body.song,
-        req.params.slug, 
+        req.body,
+        req.params.id, 
       );
       res.json({ song });
     } catch (error) {
+      console.log(req.params.id) 
+      console.log(error);
       next(error);
     }
   },

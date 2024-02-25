@@ -3,7 +3,7 @@
 
 import { PrismaVectorStore } from "@langchain/community/vectorstores/prisma";
 import { GoogleGenerativeAIEmbeddings  } from "@langchain/google-genai";
-import { PrismaClient, Prisma, Song,  } from "@prisma/client";
+import { PrismaClient, Prisma, Song } from "@prisma/client";
 
 // add prisma to the NodeJS global type
 // TODO : downgraded @types/node to 15.14.1 to avoid error on NodeJS.Global
@@ -29,7 +29,19 @@ export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
     vectorColumnName: "vector",
     columns: {
       id: PrismaVectorStore.IdColumn,
-      content: PrismaVectorStore.ContentColumn,
+      name : PrismaVectorStore.ContentColumn,
+      duration : PrismaVectorStore.ContentColumn,
+      year : PrismaVectorStore.ContentColumn,
+      origin : PrismaVectorStore.ContentColumn,
+      content : PrismaVectorStore.ContentColumn,
+      tags : PrismaVectorStore.ContentColumn,
+      mood : PrismaVectorStore.ContentColumn,
+      lyricsSnippet : PrismaVectorStore.ContentColumn,
+    },
+    filter: {
+      content: {
+        equals: "default",
+      },
     },
   }
 );

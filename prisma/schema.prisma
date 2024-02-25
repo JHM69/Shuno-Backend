@@ -55,8 +55,6 @@ model Tag {
 }
 
 
-
-
 model User {
   id         Int       @id @default(autoincrement())
   email      String    @unique
@@ -77,7 +75,6 @@ model User {
   artists    Artist[]   @relation("addedArtists")
   likedSongs Song[]     @relation("UserLikes")
   followingArtists Artist[] @relation("UserFollows")
-  @@map("users")
 }
 
 
@@ -116,7 +113,6 @@ model Artist {
   genres      Genre[]   @relation("ArtistGenres")
   followers User[] @relation("UserFollows")
   @@index([name])
-  @@map("artists")
 }
 
 model Album {
@@ -236,8 +232,8 @@ model Song {
   updatedAt DateTime    @updatedAt
   likeds     User[] @relation("UserLikes")
   vector  Unsupported("vector")?
-  @@index([name], name: "name")
-  @@map("songs")
+  content String?   @db.Text
+  @@index([name], name: "name") 
 }
 
 model Image {
