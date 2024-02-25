@@ -45,11 +45,11 @@ export const getSongs = async (query: any, username?: string) => {
       await songStore.similaritySearch(query.search, 10, "default").catch((e) => {
         console.log("Error in Similarity Search");
         console.log(e);
-        throw new HttpException(422, { errors: { title: ["Error in Searching Similar Songs"] } });
+        
       }).then((result) => {
         console.log("Similarity Search Result");
         console.log(result);
-        return result;
+        
       });
 
 
