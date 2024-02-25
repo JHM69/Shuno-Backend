@@ -84,7 +84,7 @@ model Artist {
   name             String
   creatorType      ContentType @default(MUSIC)
   songs            Song[]    @relation("ArtistSongs") 
-  primaryImage     String?   @default("http://54.80.47.120:5001/logo.png")
+  primaryImage     String?   @default("https://shunofiles.s3.amazonaws.com/images/1708905006504-unknown.png")
   followerCount    Int?      @default(0)
   fanCount         Int?      @default(0)
   isVerified       Boolean?  @default(false)
@@ -120,8 +120,8 @@ model Album {
   id           Int      @id @default(autoincrement())
   name        String
   releaseYear  String?
-  songs        Song[]
-  coverImage   String?
+  songs        Song[] 
+  coverImage   String?  @default("https://shunofiles.s3.amazonaws.com/images/1708905006504-unknown.png")
   contentType  ContentType 
   duration     Int?
   price        Int?
@@ -154,7 +154,7 @@ model Playlist {
   slug         String   @unique
   name         String
   id           Int      @id @default(autoincrement())  
-  primaryImage String?
+  primaryImage String?  @default("https://shunofiles.s3.amazonaws.com/images/1708905006504-unknown.png")
   username     String 
   type         String?
   year         String?
@@ -206,7 +206,7 @@ model Song {
   copyright       String?
   contentType     ContentType
   images          Image[]  @relation("SongImages")
-  primaryImage    String?
+  primaryImage    String?  @default("https://shunofiles.s3.amazonaws.com/images/1708905006504-unknown.png")
   downloadUrls    SongDownloadUrl[] @relation("SongDownloadUrls")
   origin             String?
   lyricsSnippet      String?   @db.Text

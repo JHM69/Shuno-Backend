@@ -21,7 +21,6 @@ jobs:
           port: 22
           source: "."
           target: "~/Shuno-Backend"
-      
       - name: Executing remote SSH commands
         uses: appleboy/ssh-action@master
         with:
