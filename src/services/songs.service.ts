@@ -3,10 +3,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 import slugify from 'slugify';
-
-import prisma, { songStore } from '../../prisma/prisma-client';
+ 
+import prisma, { bookStore, podcastStore, poemsStore, songStore } from '../../prisma/prisma-client';
 import HttpException from '../models/http-exception.model';
-import { Song } from '@prisma/client';
 
 
 const buildFindAllQuery = (query: any, username: string | undefined) => {
@@ -103,12 +102,41 @@ export const getSongs = async (query: any, username?: string) => {
 
 
 export const aiSearchSongs = async (query: any) => {
-  const result = await songStore.similaritySearchWithScore(query.search, 1);
+  const result = await songStore.similaritySearchWithScore(query.search, 10);
   console.log(result);
   return {
     result,
   };
 }
+
+
+export const aiSearchPodcasts = async (query: any) => {
+  const result = await podcastStore.similaritySearchWithScore(query.search, 10);
+  console.log(result);
+  return {
+    result,
+  };
+}
+
+
+export const aiSearchAudiobooks = async (query: any) => {
+  const result = await bookStore.similaritySearchWithScore(query.search, 10);
+  console.log(result);
+  return {
+    result,
+  };
+}
+
+
+export const aiSearchPoems = async (query: any) => {
+  const result = await poemsStore.similaritySearchWithScore(query.search, 10);
+  console.log(result);
+  return {
+    result,
+  };
+}
+
+
 
 export const createSong = async (song: any, username : string) => {
   const { 
@@ -135,7 +163,6 @@ export const createSong = async (song: any, username : string) => {
     isDolbyContent, 
     trillerAvailable ,  
     primaryImage,
-    images, 
     downloadUrls
   } = song;
 
@@ -234,8 +261,8 @@ export const createSong = async (song: any, username : string) => {
   } 
 
   const content = `
-  -- Song Information -- \n
-  Song Name: ${data.name} \n 
+  -- ${data.contentType} Information -- \n
+  ${data.contentType} Name: ${data.name} \n 
   Primary Artists: ${primaryArtists.map((artist: any) => artist).join(", ")} \n
   Featured Artists: ${featuredArtists.map((artist: any) => artist).join(", ")} \n
   Genres: ${genres.map((genre: any) => genre).join(", ")} \n
@@ -256,6 +283,8 @@ export const createSong = async (song: any, username : string) => {
   console.log("Creating Song");
 
   console.log(JSON.stringify(data));
+
+  data.origin = data.contentType;
 
 
   await prisma.song.create( {
@@ -433,8 +462,8 @@ export const updateSong = async (song: any, id: string) => {
   delete data.content;
 
   const content = `
-  -- Song Information -- \n
-  Song Name: ${data.name} \n 
+  -- ${data.contentType} Information -- \n
+  ${data.contentType} Name: ${data.name} \n 
   Primary Artists: ${primaryArtists?.map((artist: any) => artist).join(", ")} \n
   Featured Artists: ${featuredArtists.map((artist: any) => artist).join(", ")} \n
   Genres: ${genres.map((genre: any) => genre).join(", ")} \n
@@ -447,6 +476,8 @@ export const updateSong = async (song: any, id: string) => {
   Lyrics: ${data.lyricsSnippet} \n `;
 
   console.log(content);
+
+  data.origin = data.contentType;
 
   const updatedSong = await prisma.song.update({
     where: {

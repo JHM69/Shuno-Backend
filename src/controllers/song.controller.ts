@@ -6,7 +6,10 @@ import { getSong,
   createSong, 
   updateSong, 
   deleteSong,
-  aiSearchSongs
+  aiSearchSongs,
+  aiSearchPodcasts,
+  aiSearchAudiobooks,
+  aiSearchPoems
  } from '../services/songs.service';
  
 
@@ -44,6 +47,48 @@ router.get(
     }
   },
 );
+
+ 
+router.get(
+  '/ai-search-podcasts',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await aiSearchPodcasts(req.query);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+
+router.get(
+  '/ai-search-audiobooks',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await aiSearchAudiobooks(req.query);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+ 
+router.get(
+  '/ai-search-poems',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await aiSearchPoems(req.query);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+
+
 /**
  * Create song
  * @route {POST} /songs

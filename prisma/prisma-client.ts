@@ -21,6 +21,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 
+
 export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
   new GoogleGenerativeAIEmbeddings(),
   {
@@ -28,6 +29,7 @@ export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
     tableName: "Song",
     vectorColumnName: "vector",
     columns: {
+      contentType: PrismaVectorStore.ContentColumn,
       id: PrismaVectorStore.IdColumn,
       name : PrismaVectorStore.ContentColumn,
       slug : PrismaVectorStore.ContentColumn,
@@ -40,8 +42,106 @@ export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
       tags : PrismaVectorStore.ContentColumn,
       mood : PrismaVectorStore.ContentColumn,
       lyricsSnippet : PrismaVectorStore.ContentColumn,
-    }
+    },
+    filter: {
+      origin: {
+        equals: "MUSIC",
+      },
+    },
   }
 );
+
+
+export const podcastStore = PrismaVectorStore.withModel<Song>(prisma).create(
+  new GoogleGenerativeAIEmbeddings(),
+  {
+    prisma: Prisma,
+    tableName: "Song",
+    vectorColumnName: "vector",
+    columns: {
+      contentType: PrismaVectorStore.ContentColumn,
+      id: PrismaVectorStore.IdColumn,
+      name : PrismaVectorStore.ContentColumn,
+      slug : PrismaVectorStore.ContentColumn,
+      label : PrismaVectorStore.ContentColumn,
+      primaryImage : PrismaVectorStore.ContentColumn,
+      duration : PrismaVectorStore.ContentColumn,
+      year : PrismaVectorStore.ContentColumn,
+      origin : PrismaVectorStore.ContentColumn,
+      content : PrismaVectorStore.ContentColumn,
+      tags : PrismaVectorStore.ContentColumn,
+      mood : PrismaVectorStore.ContentColumn,
+      lyricsSnippet : PrismaVectorStore.ContentColumn,
+    },
+    filter: {
+      origin: {
+        equals: "PODCAST",
+      },
+    },
+  }
+);
+
+
+
+export const poemsStore = PrismaVectorStore.withModel<Song>(prisma).create(
+  new GoogleGenerativeAIEmbeddings(),
+  {
+    prisma: Prisma,
+    tableName: "Song",
+    vectorColumnName: "vector",
+    columns: {
+      contentType: PrismaVectorStore.ContentColumn,
+      id: PrismaVectorStore.IdColumn,
+      name : PrismaVectorStore.ContentColumn,
+      slug : PrismaVectorStore.ContentColumn,
+      label : PrismaVectorStore.ContentColumn,
+      primaryImage : PrismaVectorStore.ContentColumn,
+      duration : PrismaVectorStore.ContentColumn,
+      year : PrismaVectorStore.ContentColumn,
+      origin : PrismaVectorStore.ContentColumn,
+      content : PrismaVectorStore.ContentColumn,
+      tags : PrismaVectorStore.ContentColumn,
+      mood : PrismaVectorStore.ContentColumn,
+      lyricsSnippet : PrismaVectorStore.ContentColumn,
+    },
+    filter: {
+      origin: {
+        equals: "POEM",
+      },
+    },
+  }
+);
+
+
+export const bookStore = PrismaVectorStore.withModel<Song>(prisma).create(
+  new GoogleGenerativeAIEmbeddings(),
+  {
+    prisma: Prisma,
+    tableName: "Song",
+    vectorColumnName: "vector",
+    columns: {
+      contentType: PrismaVectorStore.ContentColumn,
+      id: PrismaVectorStore.IdColumn,
+      name : PrismaVectorStore.ContentColumn,
+      slug : PrismaVectorStore.ContentColumn,
+      label : PrismaVectorStore.ContentColumn,
+      primaryImage : PrismaVectorStore.ContentColumn,
+      duration : PrismaVectorStore.ContentColumn,
+      year : PrismaVectorStore.ContentColumn,
+      origin : PrismaVectorStore.ContentColumn,
+      content : PrismaVectorStore.ContentColumn,
+      tags : PrismaVectorStore.ContentColumn,
+      mood : PrismaVectorStore.ContentColumn,
+      lyricsSnippet : PrismaVectorStore.ContentColumn,
+    },
+    filter: {
+      origin: {
+        equals: "AUDIOBOOK",
+      },
+    },
+  }
+);
+
+
 
 export default prisma;
