@@ -140,10 +140,8 @@ export const createSong = async (song: any, username : string) => {
   } = song;
 
 
-  console.log("Creating Song");
 
-  console.log({tags});
-  console.log({mood});
+
 
   const data : any = {
     slug : `${slugify(name)}`,
@@ -206,22 +204,25 @@ export const createSong = async (song: any, username : string) => {
   
   if(genres){
     data.genres = {
-      connect: genres.map((genre: any) => ({
-        slug: genre,
-      })),
+      connectOrCreate: genres.map((genre: any) => (
+        {
+          where: { slug: genre },
+          create: { slug: genre, name: genre },
+        }
+      )),
     }
   }
  
 
 
-  if(images){
-    data.images = {
-      create: images.map((image: any) => ({
-        url: image.url,
-        type: image.type,
-      })),
-    }
-  } 
+  // if(images){
+  //   data.images = {
+  //     create: images.map((image: any) => ({
+  //       url: image.url,
+  //       type: image.type,
+  //     })),
+  //   }
+  // } 
 
   if(downloadUrls && downloadUrls.length > 0){
     data.downloadUrls = {
@@ -250,6 +251,11 @@ export const createSong = async (song: any, username : string) => {
 
 
   console.log(content);
+
+
+  console.log("Creating Song");
+
+  console.log(JSON.stringify(data));
 
 
   await prisma.song.create( {
@@ -400,14 +406,18 @@ export const updateSong = async (song: any, id: string) => {
     }
   }
  
-  
+   
   if(genres){
     data.genres = {
-      connect: genres.map((genre: any) => ({
-        slug: genre,
-      })),
+      connectOrCreate: genres.map((genre: any) => (
+        {
+          where: { slug: genre },
+          create: { slug: genre, name: genre },
+        }
+      )),
     }
   }
+ 
  
 
 
