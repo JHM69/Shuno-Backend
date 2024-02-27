@@ -2,6 +2,7 @@
 /* eslint-disable import/prefer-default-export */
 
  
+import { ContentType } from '@prisma/client';
 import prisma from '../../prisma/prisma-client';
  
 const buildFindAllQuery = (query: any, username: string | undefined) => {
@@ -18,6 +19,85 @@ const buildFindAllQuery = (query: any, username: string | undefined) => {
   return queries;
 };
 
+
+
+
+interface ContentFetchOptions {
+  contentType: ContentType;
+  limit: number;
+}
+
+async function fetchContent({ contentType, limit }: ContentFetchOptions) {
+
+  console.log("Fetching content for contentType: ", contentType, " and limit: ", limit);
+  const items = await prisma.album.findMany({
+    where: { contentType  },
+    orderBy: { updatedAt: 'desc' },
+    take: limit,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      coverImage: true,
+      duration: true,
+      label: true,
+      releaseYear: true,
+      language: true,
+      plays: true,
+      contentType: true,
+      mainArtist: {
+        select: {
+          name: true,
+          slug: true,
+          primaryImage: true,
+        },
+      },
+      songs: {
+        select: {
+          slug: true,
+        },
+      },
+      genres: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return items.map(item => ({
+    id: item.slug,
+    title: item.name,
+    subtitle: item.label,
+    header_desc: "",
+    type: "album",
+    perma_url:  item.slug, 
+    image:  item.coverImage,                                             
+    language: item.language,
+    year:  item.releaseYear,
+    play_count:  item.plays || "0",
+    explicit_content: "0",
+    list_count: "0",
+    list_type: "",
+    list: "",
+    more_info: {
+      release_date:  item.releaseYear,
+      song_count:  item.songs.length.toString() || "0",
+      artistMap: {
+        primary_artists:  [],
+        featured_artists:  [],
+        artists: {
+            id: item?.mainArtist?.slug,
+            name: item?.mainArtist?.name,
+            role: "primary_artist",
+            image: item?.mainArtist?.primaryImage,
+         },
+      }
+    },
+    modules: null
+  }));
+}
+
 export const getHomeData = async (query: any, username?: string) => {
   const andQueries = buildFindAllQuery(query, username);
  
@@ -33,10 +113,10 @@ export const getHomeData = async (query: any, username?: string) => {
   const playlists = await prisma.playlist.findMany({
     where: { AND: andQueries },
     orderBy: {
-      createdAt: 'desc',
+      updatedAt: 'desc',
     },
     skip: Number(query.offset) || 0,
-    take: Number(query.limit) || 10,
+    take: Number(query.limit) || 5,
     select: {
         name: true,
         slug: true,
@@ -75,7 +155,7 @@ export const getHomeData = async (query: any, username?: string) => {
     subtitle: playlist.label,
     header_desc: "",
     type: "playlist",
-    perma_url: "https://www.shuno.com/playlist"+playlist.slug,
+    perma_url: `https://www.shuno.com/playlist${playlist.slug}`,
     image:  playlist.primaryImage,                                             
     language: playlist.language,
     year:  playlist.year,
@@ -104,10 +184,10 @@ export const getHomeData = async (query: any, username?: string) => {
   const albums = await prisma.album.findMany({
     where: { AND: andQueries },
     orderBy: {
-      createdAt: 'desc',
+       updatedAt : 'desc',
     },
     skip: Number(query.offset) || 0,
-    take: Number(query.limit) || 10,
+    take: Number(query.limit) || 5,
     select: {
         id : true,
         name: true,
@@ -143,7 +223,7 @@ export const getHomeData = async (query: any, username?: string) => {
     subtitle: album.label,
     header_desc: "",
     type: "album",
-    perma_url: "https://www.shuno.com/playlist"+album.slug, 
+    perma_url:  album.slug, 
     image:  album.coverImage,                                             
     language: album.language,
     year:  album.year,
@@ -168,54 +248,65 @@ export const getHomeData = async (query: any, username?: string) => {
     },
     modules: null
   }));
- 
 
+  // eslint-disable-next-line no-console
+  console.log("Fetched new_albums");
+
+
+  function createModule(source : any, position : number, title : string, api : string) {
+    // eslint-disable-next-line no-console
+    console.log("Creating module for source: ", source, " and title: ", title);
+    return {
+      source,
+      position,
+      score: "",
+      bucket: "",
+      scroll_type: "SS_Condensed_Double",
+      title,
+      subtitle: "",
+      highlight: "",
+      simpleHeader: false,
+      noHeader: false,
+      view_more: {
+        api,
+        page_param: "p",
+        size_param: "n",
+        default_size: 5,
+        scroll_type: "SS_Basic_Double"
+      },
+      is_JT_module: false
+    };
+  }
+
+  // eslint-disable-next-line no-console
+  console.log("Fetching contentTypes");
+
+
+  const contentTypes : ContentType[] = ['MUSIC', 'PODCAST', 'AUDIOBOOK', 'POEM' as const];
+  const results = await Promise.all(contentTypes.map(type   => 
+    fetchContent({ contentType: type as ContentType, limit: Number(query.limit) || 5 })
+  ));
+
+  const [songs, podcasts, audiobooks, poems] = results;
+ 
+  const modules = {
+    new_trending: createModule("new_trending", 1, "Playlists", "content.getTrending"),
+    new_albums: createModule("new_albums", 2, "Books, Podcasts, Albums", "content.getAlbums"),
+    songs: createModule("songs", 3, "Songs", "content.getSongs"),  
+    podcasts: createModule("podcasts", 4, "Podcasts", "content.getPodcasts"),  
+    audiobooks: createModule("audiobooks", 5, "Audio Books", "content.getAudiobooks"), 
+    poems: createModule("poems", 6, "Poems & Stories", "content.getPoems")  
+  };
+  
   return {
     new_trending,
     new_albums,
-    modules : {
-     "new_trending": {
-			"source": "new_trending",
-			"position": 2,
-			"score": "",
-			"bucket": "",
-			"scroll_type": "SS_Condensed_Double",
-			"title": "Playlists",
-			"subtitle": "",
-			"highlight": null,
-			"simpleHeader": false,
-			"noHeader": false,
-			"view_more": {
-				"api": "content.getTrending",
-				"page_param": "p",
-				"size_param": "n",
-				"default_size": 10,
-				"scroll_type": "SS_Basic_Double"
-			},
-			"is_JT_module": false
-		},
-    
-    "new_albums": {
-			"source": "new_albums",
-			"position": 1,
-			"score": "",
-			"bucket": "",
-			"scroll_type": "SS_Condensed_Double",
-			"title": "Books, Podcasts, Albums",
-			"subtitle": "",
-			"highlight": "",
-			"simpleHeader": false,
-			"noHeader": false,
-			"view_more": {
-				"api": "content.getAlbums",
-				"page_param": "p",
-				"size_param": "n",
-				"default_size": 10,
-				"scroll_type": "SS_Basic_Double"
-			},
-			"is_JT_module": false
-		},
-  }
+    songs ,
+    podcasts,
+    audiobooks,
+    poems,
+    modules
   };
+   
 };
  
