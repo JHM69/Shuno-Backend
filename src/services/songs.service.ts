@@ -80,6 +80,8 @@ export const getSongs = async (query: any, username?: string) => {
           primaryImage: true,
         },
       },
+      lyricsSnippet: true,
+      mediaPreviewUrl: true, 
       // downloadUrls: true,
       // images: true,
       // playLists: true,

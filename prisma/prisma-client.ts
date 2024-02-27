@@ -42,6 +42,11 @@ export const songStore = PrismaVectorStore.withModel<Song>(prisma).create(
       tags : PrismaVectorStore.ContentColumn,
       mood : PrismaVectorStore.ContentColumn,
       lyricsSnippet : PrismaVectorStore.ContentColumn,
+      url : PrismaVectorStore.ContentColumn,
+      albumId : PrismaVectorStore.ContentColumn,
+      artistId : PrismaVectorStore.ContentColumn,
+      hasLyrics : PrismaVectorStore.ContentColumn,
+      isDolbyContent : PrismaVectorStore.ContentColumn,
     },
     filter: {
       origin: {
@@ -72,6 +77,11 @@ export const podcastStore = PrismaVectorStore.withModel<Song>(prisma).create(
       tags : PrismaVectorStore.ContentColumn,
       mood : PrismaVectorStore.ContentColumn,
       lyricsSnippet : PrismaVectorStore.ContentColumn,
+      url : PrismaVectorStore.ContentColumn,
+      albumId : PrismaVectorStore.ContentColumn,
+      artistId : PrismaVectorStore.ContentColumn,
+      hasLyrics : PrismaVectorStore.ContentColumn,
+      isDolbyContent : PrismaVectorStore.ContentColumn,
     },
     filter: {
       origin: {
@@ -103,6 +113,11 @@ export const poemsStore = PrismaVectorStore.withModel<Song>(prisma).create(
       tags : PrismaVectorStore.ContentColumn,
       mood : PrismaVectorStore.ContentColumn,
       lyricsSnippet : PrismaVectorStore.ContentColumn,
+      url : PrismaVectorStore.ContentColumn,
+      albumId : PrismaVectorStore.ContentColumn,
+      artistId : PrismaVectorStore.ContentColumn,
+      hasLyrics : PrismaVectorStore.ContentColumn,
+      isDolbyContent : PrismaVectorStore.ContentColumn,
     },
     filter: {
       origin: {
@@ -133,6 +148,11 @@ export const bookStore = PrismaVectorStore.withModel<Song>(prisma).create(
       tags : PrismaVectorStore.ContentColumn,
       mood : PrismaVectorStore.ContentColumn,
       lyricsSnippet : PrismaVectorStore.ContentColumn,
+      url : PrismaVectorStore.ContentColumn,
+      albumId : PrismaVectorStore.ContentColumn,
+      artistId : PrismaVectorStore.ContentColumn,
+      hasLyrics : PrismaVectorStore.ContentColumn,
+      isDolbyContent : PrismaVectorStore.ContentColumn,
     },
     filter: {
       origin: {

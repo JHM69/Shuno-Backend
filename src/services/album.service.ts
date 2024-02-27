@@ -90,10 +90,7 @@ trillerUrl
   if (!name ) {
     throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
   }
-
-  console.log("album");
-  console.log(album);
-
+ 
   const data : any = {
     slug : `${slugify(name)}`,
     contentType,
@@ -163,8 +160,7 @@ trillerAvailable : (trillerAvailable === "true"),
 
     const al = await prisma.album.create({
       data
-    }).catch((e) => {
-      console.log(e);
+    }).catch((e) => { 
       throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
     });
 
@@ -224,8 +220,7 @@ export const getAlbum = async (slug: string) => {
   };
 };
 
-export const getAlbumById = async (slug: string) => { 
-  console.log(slug);
+export const getAlbumById = async (slug: string) => {  
   const album = await prisma.album.findUnique({
     where: {
       slug
@@ -383,9 +378,7 @@ trillerUrl
   if (!name ) {
     throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
   }
-
-  console.log("album");
-  console.log(album);
+ 
 
   const data : any = {
     slug : `${slugify(name)}`,
@@ -439,16 +432,13 @@ trillerAvailable : (trillerAvailable === "true"),
       data.currency =  "BDT"; 
     }
 
-
-    console.log("data");
-    console.log(data);
+ 
   const updatedAlbum = await prisma.album.update({
     where: {
       slug,
     },
-    data: data,
-  }).catch((e) => { 
-    console.log(e);
+    data,
+  }).catch((e) => {  
     throw new HttpException(422, { errors: { title: ["Required Name fields are missing"] } });
     
   }
