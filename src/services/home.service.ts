@@ -290,12 +290,12 @@ export const getHomeData = async (query: any, username?: string) => {
   const [songs, podcasts, audiobooks, poems] = results;
  
   const modules = {
-    new_trending: createModule("new_trending", 1, "Playlists", "content.getTrending"),
-    new_albums: createModule("new_albums", 2, "Books, Podcasts, Albums", "content.getAlbums"),
+    new_trending: createModule("new_trending", 1, "Trending", "content.getTrending"),
+    new_albums: createModule("new_albums", 2, "Recommended", "content.getAlbums"),
     songs: createModule("songs", 3, "Songs", "content.getSongs"),  
     podcasts: createModule("podcasts", 4, "Podcasts", "content.getPodcasts"),  
     audiobooks: createModule("audiobooks", 5, "Audio Books", "content.getAudiobooks"), 
-    poems: createModule("poems", 6, "Poems & Stories", "content.getPoems")  
+    poems: createModule("poems", 6, "Poems Reciting", "content.getPoems")  
   };
   
   return {
