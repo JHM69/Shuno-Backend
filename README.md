@@ -4,6 +4,8 @@
 
 Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks, poem resiting or any kind of audio with Semantic Search using Vector embedding and langchain.
 
+![Shuno-Backend](./public/images/file.png)
+
 huno-Backend with express js using Postgres Database and prisma 
 
 
