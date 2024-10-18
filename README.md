@@ -9,6 +9,12 @@ Shuno is a all an one audio streaming platform for musics, podcasts, audiobooks,
 huno-Backend with express js using Postgres Database and prisma 
 
 
+Checkout the app and CMS too
+
+1. App: https://github.com/JHM69/Shuno-App
+2. Artist CMS: https://github.com/JHM69/Shuno-CMS
+
+
 ## structure
 
 <!-- A image from public/images folder  -->
